@@ -1,0 +1,5 @@
+*.py[cod]
+
+experiments
+testdata
+TODO.txt
