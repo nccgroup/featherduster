@@ -125,6 +125,11 @@ while True:
       print ''
       if analysis_results['decoded_ciphertexts'] != samples:
          samples = analysis_results['decoded_ciphertexts']
+         if raw_input('The imported samples were encoded. Do you want to show the decoded samples (no)? ').lower() in ['y','yes']:
+            print 'Samples:\n' + '-'*40
+            for sample in samples:
+               print repr(sample)
+            print '-'*40 + '\n'
    elif attack_selection_method == 's':
       search_term = raw_input("Please enter your search term: ")
       
