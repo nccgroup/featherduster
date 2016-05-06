@@ -41,7 +41,8 @@ def check_rsa_key(sample):
       if rsakey.has_private():
          has_private_component = True
       n_bit_length = gmpy.mpz(rsakey.n).bit_length()
-   except ValueError:
+   # Don't really care why it fails, just want to see if it did
+   except:
       is_rsa_key = False
    return (is_rsa_key, has_private_component, n_bit_length)
       
@@ -78,6 +79,12 @@ def is_base64_encoded(sample):
    
    sample - (string) The sample to evaluate
    '''
+   base64chars = string.letters + string.digits + string.whitespace
+   base64chars += '/+='
+   # Turns out a lot of crazy things will b64-decode happily with
+   # sample.decode('base64'). This is the fix.
+   if any([char not in base64chars for char in sample]):
+      return False
    try:
       sample.decode('base64')
       return True
@@ -897,7 +904,7 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
    
    Checks for:
    Randomness of the data (to identify output of a CSPRNG/RNG/strong cipher)
-   gzip encoding
+   zlib compression
    ASCII hex encoding
    Base64 encoding
    Block cipher vs Stream cipher
