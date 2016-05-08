@@ -478,6 +478,7 @@ def long_to_string(inlong):
    else:
       return hex_encoded.decode('hex')
 
+"""
 def inverse_mod( a, m ):
   '''
   Inverse of a mod m from ecdsa python module by Peter Pearson.
@@ -502,7 +503,7 @@ def inverse_mod( a, m ):
   assert d == 1
   if ud > 0: return ud
   else: return ud + m 
-
+"""
 
 def split_into_blocks(ciphertext,blocksize):
    '''
@@ -725,6 +726,11 @@ def fermat_factor(N, minutes=10, verbose=False):
    Daniel J. Bernstein, Nadia Heninger, and Tanja Lange.
 
    http://facthacks.cr.yp.to/
+   
+   N - integer to attempt to factor using Fermat's Last Theorem
+   minutes - number of minutes to run the algorithm before giving up
+   verbose - (bool) Periodically show how many iterations have been
+      attempted
    """
    from time import time
    current_time = int(time())
@@ -767,7 +773,21 @@ def fermat_factor(N, minutes=10, verbose=False):
 
 
 def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=False, debug=False):
-   """Bleichenbacher's RSA-PKCS1-v1_5 padding oracle from CRYPTO '98"""
+   """
+   Bleichenbacher's RSA-PKCS1-v1_5 padding oracle from CRYPTO '98
+   
+   Given an RSA-PKCS1-v1.5 padding oracle and a ciphertext,
+   decrypt the ciphertext.
+
+   ciphertext - The ciphertext to decrypt
+   padding_oracle - A function that communicates with the padding oracle.
+      The function should take a single parameter as the ciphertext, and
+      should return either True for good padding or False for bad padding.
+   exponent - The public exponent of the keypair
+   modulus - The modulus of the keypair
+   verbose - (bool) Whether to show verbose output
+   debug - (bool) Show very verbose output
+   """
    # Preamble:
    exponent = gmpy.mpz(exponent)
    bit_length = gmpy.mpz(modulus).bit_length()
@@ -878,6 +898,10 @@ def xor_known_plaintext(matched_plaintext,matched_ciphertext,unmatched_ciphertex
    """
    Given matching plaintext/ciphertext values, derive the key
    and decrypt another ciphertext encrypted under the same key.
+
+   matched_plaintext - The plaintext half of a plaintext/ciphertext pair
+   matched_ciphertext - The ciphertext half of a plaintext/ciphertext pair
+   unmatched_ciphertext - A ciphertext whose plaintext is unknown
    """
    return sxor(sxor(matched_plaintext,matched_ciphertext),unmatched_ciphertext)
 
@@ -887,6 +911,13 @@ def cbc_edit(old_plaintext,new_plaintext,old_ciphertext):
    '''
    Calculate the new ciphertext needed to make particular edits to plaintext
    through ciphertext modification.
+
+   old_plaintext - The old block of plaintext to be modified
+   new_plaintext - The new block of plaintext to be modified
+   old_ciphertext - The block of ciphertext to modify in order to make the
+      changes. For CBC mode ciphertext, this is the previous block or IV.
+      For stream ciphertext, this is the block of ciphertext corresponding
+      to the old_plaintext.
    '''
    if not (len(old_plaintext) == len(new_plaintext) == len(old_ciphertext)):
       raise InputLengthException
@@ -914,6 +945,9 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
    OpenSSL formatted encrypted data
    Stream cipher key reuse
    
+   data - A list of samples to analyze
+   verbose - (bool) Display messages regarding analysis results
+   do_more_checks - (bool) Check for classical ciphers
    '''
    results = {}
    result_properties = ['ecb', 'cbc_fixed_iv', 'blocksize', 'md_hashes',
@@ -1367,7 +1401,16 @@ def cbcr(new_plaintext, oracle, block_size, is_padding_oracle=False, verbose=Fal
 
 
 def break_single_byte_xor(ciphertext,num_answers=5,pt_freq_table=frequency.frequency_tables['english'],single_chars_only=False):
-   '''Return a list of likely successful single byte XOR decryptions sorted by score'''
+   '''
+   Return a list of likely successful single byte XOR decryptions sorted by score
+   
+   ciphertext - Ciphertext to attack
+   num_answers - (int) maximum number of answers to return
+   pt_freq_table - A frequency table for the expected plaintext, as generated
+      by generate_frequency_table().
+   single_chars_only - When performing plaintext detection, check only the
+      frequency distribution of single characters, not multigrams or word count.
+   '''
    answers = {}
    ciphertext_len = len(ciphertext)
    # Try xor with every possible byte value and score the resulting plaintext
@@ -1378,7 +1421,16 @@ def break_single_byte_xor(ciphertext,num_answers=5,pt_freq_table=frequency.frequ
    return sorted(answers.items(),key=operator.itemgetter(1))[:num_answers]
 
 def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_table=frequency.frequency_tables['english'], verbose=False):
-   '''Return a list of likely successful multi-byte XOR decryptions sorted by score'''
+   '''
+   Return a list of likely successful multi-byte XOR decryptions sorted by score
+   
+   ciphertext - Ciphertext to attack
+   max_keysize - Largest keysize to try
+   num_answers - (int) maximum number of answers to return
+   pt_freq_table - A frequency table for the expected plaintext, as generated
+      by generate_frequency_table()
+   verbose - (bool) Show progress in the attack
+   '''
    edit_distances = {}
    ciphertext_len = len(ciphertext)
    for keysize in xrange(2,max_keysize+1):
@@ -1430,6 +1482,12 @@ def break_many_time_pad(ciphertexts, pt_freq_table=frequency.frequency_tables['e
    Block ciphers in a stream mode (CTR, GCM, etc) with fixed key/IV
    
    Returns an array of the best candidate decryption for each ciphertext represented as strings
+
+   ciphertexts - A list of ciphertexts to attack
+   pt_freq_table - A frequency table matching the expected frequency
+      distribution of the correct plaintext, as generated by
+      generate_frequency_table()
+   verbose - (bool) Whether or not to show progress
    '''
    zipped_plaintexts = []
    zipped_ciphertexts = [''.join(a) for a in zip(*ciphertexts)]
@@ -1448,7 +1506,7 @@ def break_many_time_pad(ciphertexts, pt_freq_table=frequency.frequency_tables['e
 
 
 
-# TODO: write a batch GCD algorithm
+# TODO: write a batch GCD function
 def batch_gcd(items):
    '''
    Find the greatest common denominator between two numbers in a set of numbers
@@ -1467,6 +1525,9 @@ def detect_hash_format(words, hashes):
    Matches against list of hashes provided in raw or hex form as "hashes" param
    
    Returns tuple as (matching_plaintext, hash_type) or False for no match
+
+   words - A list of words that may be in the plaintext
+   hashes - A set of captured hashes to check against
    '''
    num_words = len(words)
    if len(words) > 7:
@@ -1554,10 +1615,10 @@ def dsa_repeated_nonce_attack(r,msg1,s1,msg2,s2,n,verbose=False):
    z1 = string_to_long(SHA.new(msg1).digest())
    z2 = string_to_long(SHA.new(msg2).digest())
    
-   sdiff_inv = inverse_mod(((s1-s2)%n),n)
+   sdiff_inv = gmpy.invert(((s1-s2)%n),n)
    k = ( ((z1-z2)%n) * sdiff_inv) % n
    
-   r_inv = inverse_mod(r,n)
+   r_inv = gmpy.invert(r,n)
    da = (((((s1*k) %n) -z1) %n) * r_inv) % n
    
    if verbose:
