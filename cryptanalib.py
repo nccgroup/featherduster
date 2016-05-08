@@ -479,6 +479,9 @@ def long_to_string(inlong):
       return hex_encoded.decode('hex')
 
 """
+# Removed for now because gmpy provides its own invmod
+# gmpy.invert() seems to be OK for its current uses,
+# but we'll leave this here a while just in case.
 def inverse_mod( a, m ):
   '''
   Inverse of a mod m from ecdsa python module by Peter Pearson.
