@@ -5,6 +5,13 @@ This is a beta release of FeatherDuster. Things may be broken.
 
 If you find a bug, please file an issue. Pull requests are welcome and encouraged.
 
+#Installation
+~~~
+git clone https://github.com/nccgroup/featherduster.git
+cd featherduster
+python setup.py install
+~~~
+
 #Usage
 `python featherduster.py [ciphertext file 1] ... [ciphertext file n]`
 
