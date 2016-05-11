@@ -12,6 +12,19 @@ cd featherduster
 python setup.py install
 ~~~
 
+#### Installation errors
+
+If you encounter a missing header error such as:
+```
+./src/gmpy.h:30:10: fatal error: 'gmp.h' file not found
+```
+
+##### OSX
+Install gmp via brew `brew install gmp` then retry `python setup.py install`
+
+##### Debian
+Install gmp via apt-get `sudo apt-get install libgmp3-dev`
+
 #Usage
 `python featherduster.py [ciphertext file 1] ... [ciphertext file n]`
 
