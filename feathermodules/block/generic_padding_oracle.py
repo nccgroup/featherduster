@@ -84,10 +84,10 @@ def get_arguments(ciphertexts):
    while True:
       iv_answer = raw_input('Do you want to specify an IV (no)? ')
       if iv_answer.lower() not in ['','n','no']:
-         iv_hex = raw_input('What is the IV (hex encoded)?')
+         iv_hex = raw_input('What is the IV (hex encoded)? ')
          try:
             iv_raw = iv_hex.decode('hex')
-            if len(iv_raw) != arguments['blocksize']:
+            if len(iv_raw) == arguments['blocksize']:
                arguments['iv'] = iv_raw
                break
             else:
@@ -102,6 +102,8 @@ def get_arguments(ciphertexts):
          arguments['iv'] = None
          break
    
+   # We don't use this yet, commented out for now.
+   '''
    while True:
       prefix_answer = raw_input('Do you need to use a prefix (no)? ')
       if prefix_answer.lower() not in ['','n','no']:
@@ -115,7 +117,8 @@ def get_arguments(ciphertexts):
       else:
          arguments['prefix'] = ''
          break
-   
+   '''
+
    hollywood_answer = raw_input('Do you want hacker movie style output at a minor cost to performance (no I am lame)? ')
    arguments['hollywood'] = (hollywood_answer.lower() not in ['','n','no','no i am lame'])
  
@@ -126,5 +129,5 @@ feathermodules.module_list['padding_oracle'] = {
    'attack_function':generate_generic_padding_oracle_attack_script,
    'type':'block',
    'keywords':['block'],
-   'description':'Generate a generic padding oracle attack script.'
+   'description':'Generate a generic padding oracle attack script skeleton.'
 }
