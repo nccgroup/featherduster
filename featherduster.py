@@ -40,7 +40,7 @@ def import_samples():
 
       elif selection == '1':
          print 'For best results, provide a file with base64 or hex encoded samples separated by newlines.'
-         ciphertext_file = raw_input('Please enter the name of the file: ')
+         sample_file = raw_input('Please enter the name of the file: ')
          try:
             sample_fh = open(sample_file,'r')
             samples = [sample.strip() for sample in sample_fh.readlines()]

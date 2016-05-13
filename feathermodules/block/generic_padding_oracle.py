@@ -15,6 +15,7 @@ import sys
 if len(sys.argv) != 2:
    print '[*] Padding oracle attack script'
    print '[*] Usage: %%s <hex-encoded ciphertext or new plaintext>' %% sys.argv[0]
+   exit()
 
 def padding_oracle(ciphertext):
    # TODO: Write a function to interact with the padding oracle
