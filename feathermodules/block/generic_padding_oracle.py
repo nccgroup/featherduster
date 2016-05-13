@@ -18,13 +18,19 @@ if len(sys.argv) != 2:
    exit()
 
 def padding_oracle(ciphertext):
-   # TODO: Write a function to interact with the padding oracle
+   print '''If you are seeing this message, you haven't yet written the padding
+      oracle function. Please edit this script to tell it how to interact with
+      the oracle.'''
+   # HEY! YOU THERE!
+   # Here's where you write a function to interact with the padding oracle.
+   # This function should invoke the padding oracle with the provided ciphertext
+   # and return True for good padding, or False for bad padding.
    # Pseudocode:
    # Send ciphertext to the padding oracle
    # If the padding oracle says the padding is good:
-      return True
+   #   return True
    # Otherwise, if the oracle says the padding is bad:
-      return False
+   #   return False
 
 # To decrypt the first command line argument:
 print "The decrypted version of your input is: " + ca.padding_oracle_decrypt(padding_oracle=padding_oracle, ciphertext=sys.argv[1].decode('hex'), block_size=%r, padding_type=%r, iv=%r, verbose=True, hollywood=%r)
@@ -47,6 +53,7 @@ def generate_generic_padding_oracle_attack_script(ciphertexts):
          print '[*] Couldn\'t write to the file with the name provided. Please try again.'
          continue
    print '[+] Done! Your script is available at %s' % filename
+   print '[+] The script as-is will not be functional, please edit the padding_oracle() function as described in the generated script.'
 
 def get_arguments(ciphertexts):
    arguments = {}
