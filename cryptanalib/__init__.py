@@ -22,6 +22,7 @@ import zlib
 # This section contains various functions that are not terribly
 # useful on their own, but allow other functionality to work
 #------------------------------------
+
 def check_rsa_key(sample):
    """
    Returns a 3-tuple (is_rsa_key, has_private_component, n_bit_length)
@@ -660,6 +661,41 @@ def derive_d_from_pqe(p,q,e):
 # These functions are meant to be called directly to attack cryptosystems implemented
 # with modern crypto, or at least cryptosystems likely to be found in the real world.
 #-----------------------------------------
+
+def recover_rsa_modulus_from_signatures(m1, s1, m2, s2, e=0x10001):
+   """
+   Calculates the modulus used to produce RSA signatures from
+   two known message/signature pairs and the public exponent.
+
+   Since the most common public exponent is 65537, we default
+   to that.
+   
+   Parameters:
+   m1 - (string) The first message
+   s1 - (string) The signature of the first message
+      as an unencoded string
+   m2 - (string) The second message
+   s2 - (string) The signature of the second message
+   e - (int) The exponent to use
+
+   Returns the modulus as an integer, or False upon failure.
+   """
+   m1 = string_to_long(m1)
+   s1 = string_to_long(s1)
+   m2 = string_to_long(m2)
+   s2 = string_to_long(s2)
+   gcd_result = gmpy.gcd( s1 ** e - m1, s2 ** e - m2 )
+
+   if gcd_result < s1 or gcd_result < s2:
+      # The modulus can never be smaller than our signature.
+      # If this happens, we have been fed bad data.
+      return False
+
+   else:
+      return int(gcd_result)
+
+
+
 def small_message_rsa_attack(ciphertext, modulus, exponent, num_answers=10, minutes=5, frequency_table=frequency.frequency_tables['english'], verbose=False, cribs=frequency.common_words['english']):
    """
    With unpadded RSA, a sufficiently small exponent/message in comparison
