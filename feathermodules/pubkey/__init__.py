@@ -1,1 +1,1 @@
-__all__ = ['rsa_fermat']
+__all__ = ['rsa_fermat', 'rsa_wiener']

@@ -759,6 +759,95 @@ def small_message_rsa_attack(ciphertext, modulus, exponent, num_answers=10, minu
       multiplier += 1   
    
    
+def wiener(N, e, minutes=10, verbose=False):
+   """
+   Wiener's attack against weak RSA keys:
+   https://en.wikipedia.org/wiki/Wiener%27s_attack
+
+   Developed by Maxime Puys.
+
+   N - interger, modulus of the RSA key to factor using Wiener's attack.
+   e - interger, public exponent of the RSA key.
+   minutes - number of minutes to run the algorithm before giving up
+   verbose - (bool) Periodically show how many iterations have been
+   """
+   from time import time
+   current_time = int(time())
+   end_time = current_time + int(minutes * 60)
+
+   def contfrac(x, y):
+      """
+      Returns the continued fraction of x/y as a list.
+      """
+
+      a = x//y
+      b = a*y
+      ret = [a]
+      while b != x:
+         x, y = y, x-b
+         a = x//y
+         b = a*y
+         ret += [a]
+     
+      return ret
+
+   def continuants(frac):
+      """
+      Returns the continuants of the continued fraction frac.
+      """
+
+      prec = (frac[0], 1)
+      cur  = (frac[1]*frac[0]+1, frac[1])
+      
+      ret = [prec, cur]
+      for x in frac[2:]:
+          cur,prec = (x*cur[0] + prec[0], x*cur[1] + prec[1]), cur
+          ret += [cur]
+
+      return ret
+
+
+   def sqrt(n):
+      return gmpy.sqrt(n)
+
+   def polRoot(a, b, c):
+      """
+      Return an integer root of polynom ax^2 + bx + c.
+      """
+
+      delta = b*b - 4*a*c
+      return (-b - sqrt(delta))/(2*a)
+
+   if verbose:
+       print "Computing continued fraction."
+
+   frac = contfrac(e, N)
+
+   if verbose:
+       print "Computing continuants from fraction."
+
+   conv = continuants(frac[:136])
+   for k, d in conv:
+      if time() > end_time:
+         if verbose:
+             print "Time expired, returning 1."
+             return 1
+
+      if k>0:
+         phi = (e*d - 1)//k
+         if verbose:
+              print "Trying continuant k="+str(k)+" d="+str(d)+"."
+
+         root = polRoot(1, N-phi+1, N)
+
+         if root != 0:
+             if N%root == 0:
+                print "Modulus factored!"
+                return -root
+
+   return 1
+
+
 def fermat_factor(N, minutes=10, verbose=False):
    """
    Code based on Sage code from FactHacks, a joint work by
