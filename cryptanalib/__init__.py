@@ -815,7 +815,7 @@ def wiener(N, e, minutes=10, verbose=False):
       Return an integer root of polynom ax^2 + bx + c.
       """
 
-      delta = b*b - 4*a*c
+      delta = abs(b*b - 4*a*c)
       return (-b - sqrt(delta))/(2*a)
 
    if verbose:
@@ -826,7 +826,10 @@ def wiener(N, e, minutes=10, verbose=False):
    if verbose:
        print "Computing continuants from fraction."
 
-   conv = continuants(frac[:136])
+   conv = continuants(frac)
+   current_continuant = 1
+   total_continuants = len(conv)
+
    for k, d in conv:
       if time() > end_time:
          if verbose:
@@ -836,13 +839,15 @@ def wiener(N, e, minutes=10, verbose=False):
       if k>0:
          phi = (e*d - 1)//k
          if verbose:
-              print "Trying continuant k="+str(k)+" d="+str(d)+"."
+              sys.stdout.write("\rTesting continuant %d of %d" % (current_continuant, total_continuants))
+              current_continuant += 1
 
          root = polRoot(1, N-phi+1, N)
 
          if root != 0:
              if N%root == 0:
-                print "Modulus factored!"
+                if verbose:
+                    print "\nModulus factored!"
                 return -root
 
    return 1
