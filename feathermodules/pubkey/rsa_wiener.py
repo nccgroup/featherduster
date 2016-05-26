@@ -25,7 +25,7 @@ def wiener_attack(ciphertexts):
          key = RSA.construct((n, e, d))
          print "Found private key:\n%s" % key.exportKey()
       except:
-         print "Attack failed, key is too strong."
+         print "\nAttack failed, key is too strong."
    
    return ''
 
