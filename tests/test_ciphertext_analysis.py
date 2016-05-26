@@ -7,6 +7,29 @@ plaintext = 'I am the very model of a modern major-general, I\'ve information ve
 
 plaintext2 = 'I am the very model of a modern major-general, I\'m covered in bees and I have information vegetable, animal and mineral, I know the kings of England and I quote the fights historical, from Marathon to Waterloo in order categoricalAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 
+RSA_pubkey_critically_small_n = """-----BEGIN PUBLIC KEY-----
+MDswDQYJKoZIhvcNAQEBBQADKgAwJwIgM+SdTJtjCuCzjqr34+02DsEEp8TOuDOq
+2nznVqc7g1ECAwEAAQ==
+-----END PUBLIC KEY-----
+"""
+
+RSA_pubkey_very_small_n = """
+-----BEGIN PUBLIC KEY-----
+MHswDQYJKoZIhvcNAQEBBQADagAwZwJgWDO0D6tHeBPEkKwen2U0wKbBMyCEEiBe
+0hNIBaG7YEMKAGCX48e22xzkTT4gmtErVgGvfkWzKW/PpWOMxQcH0u/DyR6fFFZf
+ntsJZBoKZYk2sVxLjpl/fOR567JNWDlHAgMBAAE=
+-----END PUBLIC KEY-----
+"""
+
+RSA_pubkey_small_n = """
+-----BEGIN PUBLIC KEY-----
+MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgBJut++Q7fjnrCzax5d8fuJIux4u
+l7bRrm9Il5iYmwE1JSkTUITtSXnGfAA4+H5kPTnv6D7KR3ii0IuKicAQStOsof/s
+7ul3etw72y+v1BMZhj92cq/+ZdaLbhLVkhMlwreuuzPxui7Y7wQXhIJCf20TS/zE
+oZGmi6usbfkw3G19AgMBAAE=
+-----END PUBLIC KEY-----
+"""
+
 key = b'YELLOW SUBMARINE'
 iv = Random.new().read(AES.block_size)
 
@@ -58,6 +81,15 @@ ca.analyze_ciphertext([ct.encode('base64') for ct in ecb_ciphertexts],verbose=Tr
 print ''
 print 'Analyzing compressed plaintexts...'
 ca.analyze_ciphertext(compressed_messages,verbose=True)
+print ''
+print 'Analyzing critically small RSA key...'
+ca.analyze_ciphertext([RSA_pubkey_critically_small_n],verbose=True)
+print ''
+print 'Analyzing very small RSA key...'
+ca.analyze_ciphertext([RSA_pubkey_very_small_n],verbose=True)
+print ''
+print 'Analyzing small RSA key...'
+ca.analyze_ciphertext([RSA_pubkey_small_n],verbose=True)
 
 if raw_input('Were the ciphertexts properly identified (yes)?').lower() not in ['y','yes','']:
    raise Exception('Ciphertext analysis is broken.')

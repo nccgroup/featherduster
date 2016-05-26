@@ -37,7 +37,7 @@ def check_rsa_key(sample):
    is_rsa_key = has_private_component = n_bit_length = False
 
    try:
-      rsakey = RSA.importKey(sample)
+      rsakey = RSA.importKey(sample.strip())
       is_rsa_key = True
       if rsakey.has_private():
          has_private_component = True
@@ -1124,12 +1124,67 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
       if verbose:
          print '[+] Messages appear to be zlib compressed, decompressing and analyzing again.'
       return analyze_ciphertext(map(lambda x: zlib.decompress(x),data), verbose=verbose)
-   elif all([data_properties[datum]['base64_encoded'] for datum in data_properties]):
+   if all([data_properties[datum]['base64_encoded'] for datum in data_properties]):
       if verbose:
          print '[+] Messages appear to be Base64 encoded, Base64 decoding and analyzing again.'
       return analyze_ciphertext(map(lambda x: x.decode('base64'),data), verbose=verbose)
    min_blocksize = min([data_properties[datum]['blocksize'] for datum in data_properties])
-   if min_blocksize:
+   
+   # perhaps we're dealing with hashes?
+   if len(set([len(datum) for datum in data])) == 1:
+      sample_length = list(set([len(datum) for datum in data]))[0]
+      if sample_length == 16:
+         results['md_hashes'] = True
+         results['keywords'].append('md_hashes')
+         if verbose:
+            print '[+] Messages are all of length 16. This suggests MD5, MD4, or MD2 hashes.'
+            print '[!] Consider attempting hash-length extension attacks.'
+            print '[!] Consider attempting brute-force attacks.'
+      elif sample_length == 20:
+         results['sha1_hashes'] = True
+         results['keywords'].append('sha1_hashes')
+         if verbose:
+            print '[+] Messages are all of length 20. This suggests RIPEMD-160 or SHA1 hashes.'
+            print '[!] Consider attempting hash-length extension attacks.'
+            print '[!] Consider attempting brute-force attacks.'
+      elif sample_length in [28,32,48,64]:
+         results['sha2_hashes'] = True
+         results['keywords'].append('sha2_hashes')
+         if verbose:
+            print '[+] Messages all have equal length matching one possible output length of SHA-2 hashes.'
+            print '[!] Consider attempting hash-length extension attacks.'
+            print '[!] Consider attempting brute-force attacks.'
+   
+   # Are we dealing with RSA keys?
+   if all([data_properties[datum]['rsa_key'] for datum in data_properties]):
+      if verbose:
+         print '[+] At least one RSA key was discovered among the samples.'
+      results['keywords'].append('rsa_key')
+      # Any private keys?
+      if any([data_properties[datum]['rsa_private_key'] for datum in data_properties]):
+         if verbose:
+            print '[!] At least one of the RSA keys discovered contains a private key component.'
+      # Any critically small primes?
+      if any([0 < data_properties[datum]['rsa_n_length'] <= 512 for datum in data_properties]):
+         results['keywords'].append('rsa_small_n')
+         if verbose:
+            print '[!] At least one of the RSA keys discovered has a bit length <= 512. This key can reasonably be factored with a single off-the-shelf computer.'
+      # Any proven dangerously small primes?
+      elif any([0 < data_properties[datum]['rsa_n_length'] < 768 for datum in data_properties]):
+         results['keywords'].append('rsa_small_n')
+         if verbose:
+            print '[!] At least one of the RSA keys discovered has a bit length <= 768. This key can be factored with a large number of computers such as a botnet, or large cluster.'
+      # Any theoretical dangerously small primes?
+      elif any([0 < data_properties[datum]['rsa_n_length'] < 1024 for datum in data_properties]):
+         results['keywords'].append('rsa_small_n')
+         if verbose:
+            print '[!] At least one of the RSA keys discovered has a bit length <= 1024. This key can be factored with a large number of computers such as a botnet, or large cluster.'
+      if len(set(rsa_moduli)) < len(rsa_moduli):
+         results['keywords'].append('rsa_n_reuse')
+         if verbose:
+            print '[!] Two or more of the keys have the same modulus. Anyone who holds the private component for one of these keys can derive the private component for any of the others.'
+            
+   elif min_blocksize:
       results['keywords'].append('block')
       results['blocksize'] = min_blocksize
       if verbose:
@@ -1191,58 +1246,6 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
             print '[!] This suggests weak crypto is in use.'
             print '[!] Consider running single-byte or multi-byte XOR solvers.'
 
-   # Found one or more RSA keys
-   if any([data_properties[datum]['rsa_key'] for datum in data_properties]):
-      if verbose:
-         print '[+] At least one RSA key was discovered among the samples.'
-      results['keywords'].append('rsa_key')
-      # Any private keys?
-      if any([data_properties[datum]['rsa_private_key'] for datum in data_properties]):
-         if verbose:
-            print '[!] At least one of the RSA keys discovered contains a private key component.'
-      # Any critically small primes?
-      if any([0 < data_properties[datum]['rsa_n_length'] <= 512 for datum in data_properties]):
-         results['keywords'].append('rsa_small_n')
-         if verbose:
-            print '[!] At least one of the RSA keys discovered has a bit length <= 512. This key can reasonably be factored with a single off-the-shelf computer.'
-      # Any proven dangerously small primes?
-      elif any([0 < data_properties[datum]['rsa_n_length'] < 768 for datum in data_properties]):
-         results['keywords'].append('rsa_small_n')
-         if verbose:
-            print '[!] At least one of the RSA keys discovered has a bit length <= 768. This key can be factored with a large number of computers such as a botnet, or large cluster.'
-      # Any theoretical dangerously small primes?
-      elif any([0 < data_properties[datum]['rsa_n_length'] < 1024 for datum in data_properties]):
-         results['keywords'].append('rsa_small_n')
-         if verbose:
-            print '[!] At least one of the RSA keys discovered has a bit length <= 1024. This key can be factored with a large number of computers such as a botnet, or large cluster.'
-      if len(set(rsa_moduli)) < len(rsa_moduli):
-         results['keywords'].append('rsa_n_reuse')
-         if verbose:
-            print '[!] Two or more of the keys have the same modulus. Anyone who holds the private component for one of these keys can derive the private component for any of the others.'
-            
-   # perhaps we're dealing with hashes?
-   if all([(len(datum) == 16) for datum in data]):
-      results['md_hashes'] = True
-      results['keywords'].append('md_hashes')
-      if verbose:
-         print '[+] Messages are all of length 16. This suggests MD5, MD4, or MD2 hashes.'
-         print '[!] Consider attempting hash-length extension attacks.'
-         print '[!] Consider attempting brute-force attacks.'
-   if all([(len(datum) == 20) for datum in data]):
-      results['sha1_hashes'] = True
-      results['keywords'].append('sha1_hashes')
-      if verbose:
-         print '[+] Messages are all of length 20. This suggests RIPEMD-160 or SHA1 hashes.'
-         print '[!] Consider attempting hash-length extension attacks.'
-         print '[!] Consider attempting brute-force attacks.'
-   if (len(set([len(datum) for datum in data])) == 1) and all( [(len(datum) in [28,32,48,64]) for datum in data] ):
-      results['sha2_hashes'] = True
-      results['keywords'].append('sha2_hashes')
-      if verbose:
-         print '[+] Messages all have equal length matching one possible output length of SHA-2 hashes.'
-         print '[!] Consider attempting hash-length extension attacks.'
-         print '[!] Consider attempting brute-force attacks.'
-   
    # checks for silly classical crypto
    if do_more_checks:
       if all([data_properties[datum]['is_transposition_only'] for datum in data_properties]) and not 'rsa_key' in results['keywords']:
