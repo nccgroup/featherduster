@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='featherduster',
-      version='0.1.1',
+      version='0.1.2',
       description='An automated cryptanalysis tool',
       url='http://github.com/nccgroup/featherduster',
       author='Daniel "unicornfurnace" Crowley',
@@ -10,6 +10,7 @@ setup(name='featherduster',
       packages=['cryptanalib','feathermodules'],
       install_requires=[
           'gmpy',
-          'pycrypto'
+          'pycrypto',
+          'ishell'
       ],
       zip_safe=False)

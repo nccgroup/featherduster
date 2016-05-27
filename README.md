@@ -12,7 +12,7 @@ If you find a bug, please file an issue. Pull requests are welcome and encourage
 
 When importing samples through positional arguments, each file will be consumed and treated as its own ciphertext, regardless of the format of the files. FeatherDuster has the ability to automatically recognize and decode common encodings, so it's okay if these files contain encoded samples.
 
-Invoking FeatherDuster without positional arguments will allow for alternate methods of ciphertext import, specifically the ability to import a file with newline-separated samples where each line will be treated as a distinct sample, like so:
+Once the FeatherDuster console launches, alternate methods of ciphertext import will be available, specifically the ability to import a file with newline-separated samples where each line will be treated as a distinct sample, like so:
 
 ~~~
 68657920636f6f6c
@@ -62,6 +62,7 @@ sudo apt-get install libgmp3-dev
 Python 2.x
 GMPy (which itself depends on GMP)
 PyCrypto
+ishell
 ~~~
 
 ### Installation errors
