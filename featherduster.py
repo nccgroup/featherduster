@@ -208,7 +208,15 @@ fd_console.addChild(options)
 #--------
 # Main menu
 #
-print 'Welcome to FeatherDuster!\n'
+print """Welcome to FeatherDuster!
+
+To get started, use 'import' to load samples.
+Then, use 'analyze' to analyze/decode samples and get attack recommendations.
+Next, run the 'use' command to select an attack module.
+Finally, use 'run' to run the attack and see its output.
+
+For a command reference, press Enter on a blank line.
+"""
 
 for filename in sys.argv[1:]:
    sample_file = filename
