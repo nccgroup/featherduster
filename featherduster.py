@@ -55,8 +55,11 @@ class ImportClearCommand(Command):
    def run(self, line):
       feathermodules.samples = []
 
+class ImportCommand(Command):
+   def args(self):
+      return ['multifile', 'singlefile', 'manualentry', 'clear']
 
-import_sample = Command('import', help='Import samples for analysis', dynamic_args=True)
+import_sample = ImportCommand('import', help='Import samples for analysis', dynamic_args=True)
 
 import_multifile = ImportMultiFileCommand(
    'multifile',
@@ -85,13 +88,19 @@ class UseCommand(Command):
    def args(self):
       return feathermodules.module_list.keys()
    def run(self, line):
-      feathermodules.selected_attack = line.split()[-1]
+      if line.split()[-1] not in feathermodules.module_list.keys():
+         print 'Invalid module selection. Please try again.'
+      else:
+         feathermodules.selected_attack = line.split()[-1]
 
 use = UseCommand('use', help='Select the module to use', dynamic_args=True)
 
 # analyze
 class AnalyzeCommand(Command):
    def run(self, line):
+      if len(feathermodules.samples) == 0:
+         print 'No loaded samples. Please use the \'import\' command.'
+         return False
       print '[+] Analyzing samples...'
       analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True, do_more_checks=True)
       if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
@@ -108,6 +117,9 @@ analyze = AnalyzeCommand('analyze', help='Analyze/decode samples', dynamic_args=
 # autopwn
 class AutopwnCommand(Command):
    def run(self, line):
+      if len(feathermodules.samples) == 0:
+         print 'No loaded samples. Please use the \'import\' command.'
+         return False
       print '[+] Analyzing samples...'
       analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True, do_more_checks=True)
       if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
@@ -132,7 +144,7 @@ class SearchCommand(Command):
          elif search_param in feathermodules.module_list[attack]['keywords']:
             matching_modules.append(attack)
       for module in matching_modules:
-         print "%s - %s" % (attack, feathermodules.module_list[attack]['description'])
+         print "%s - %s" % (module, feathermodules.module_list[module]['description'])
       
 search = SearchCommand('search', help='Search module names and descriptions by keyword')
 
@@ -160,13 +172,27 @@ modules = ModulesCommand('modules', help='Show all available modules')
 # run
 class RunCommand(Command):
    def run(self, line):
+      if len(feathermodules.samples) == 0:
+         print 'No loaded samples. Please use the \'import\' command.'
+         return False
+      if feathermodules.selected_attack not in feathermodules.module_list.keys():
+         print 'Invalid module selection. Please use the \'use\' command.'
+         return False
       print feathermodules.module_list[feathermodules.selected_attack]['attack_function'](feathermodules.samples)
 
 run = RunCommand('run', help='Run the currently selected module')
 
 
+# options
+class OptionsCommand(Command):
+   # TODO: Eventually, migrate option selection out of feathermodules and into FD itself
+   def run(self, line):
+      print 'Currently selected module: %s' % feathermodules.selected_attack
+
+options = OptionsCommand('options', help='Show current configuration options', dynamic_args=True)
+
 # Build the console
-fd_console = Console(prompt='\nFeatherDuster [no module selected]', prompt_delim='>')
+fd_console = Console(prompt='\nFeatherDuster', prompt_delim='>')
 
 fd_console.addChild(import_sample)
 fd_console.addChild(use)
@@ -176,6 +202,7 @@ fd_console.addChild(search)
 fd_console.addChild(samples)
 fd_console.addChild(modules)
 fd_console.addChild(run)
+fd_console.addChild(options)
 
 
 #--------
