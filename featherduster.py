@@ -6,7 +6,9 @@ FeatherDuster is a tool for brushing away magical crypto fairy dust.
 '''
 
 import sys
-import string
+import glob
+from ishell.console import Console
+from ishell.command import Command
 
 import feathermodules
 from feathermodules.stream import *
@@ -18,175 +20,175 @@ from feathermodules.pubkey import *
 
 import cryptanalib as ca
 
-#--------
-# Helper functions
-#
-import_selection_prompt = """
-Please select one of the following options:
-1) Import multiple newline-separated samples from a file
-2) Import a file as a single sample
-3) Manually enter a single sample
-q) Quit
+feathermodules.samples = []
+feathermodules.selected_attack = ''
 
-Your selection: """
-def import_samples():
-   selection = ''
-   while selection not in ['1','2','3','q']:
-      selection = raw_input(import_selection_prompt).strip().lower()
+# import
+class ImportMultiFileCommand(Command):
+   def run(self, line):
+      # TODO: open a subconsole or just use readline to get filename w tab complete
+      sample_file = raw_input('Please enter the filename you want to open: ')
+      try:
+         sample_fh = open(sample_file,'r')
+         feathermodules.samples.extend([sample.strip() for sample in sample_fh.readlines()])
+         sample_fh.close()
+         feathermodules.samples = filter(lambda x: x != '' and x != None, feathermodules.samples)
+      except:
+         print 'Something went wrong. Sorry! Please try again.'
 
-      if selection == 'q':
-         print 'Thanks for using FeatherDuster!'
-         exit(0)
+class ImportSingleFileCommand(Command):
+   def run(self, line):
+      # TODO: open a subconsole or just use readline to get filename w tab complete
+      sample_file = raw_input('Please enter the filename you want to open: ')
+      try:
+         sample_fh = open(line.split()[-1],'r')
+         feathermodules.samples.append(sample_fh.read())
+         sample_fh.close()
+      except:
+         print 'Something went wrong. Sorry! Please try again.'
 
-      elif selection == '1':
-         print 'For best results, provide a file with base64 or hex encoded samples separated by newlines.'
-         sample_file = raw_input('Please enter the name of the file: ')
-         try:
-            sample_fh = open(sample_file,'r')
-            samples = [sample.strip() for sample in sample_fh.readlines()]
-            sample_fh.close()
-            samples = filter(lambda x: x != '' and x != None, samples)
-         except:
-            print 'Something went wrong. Sorry! Please try again.'
-            selection = 'failure'
+class ImportManualEntryCommand(Command):
+   def run(self, line):
+      feathermodules.samples.append(raw_input('Please enter your sample: ').strip())
 
-      elif selection == '2':
-         sample_file = raw_input('Please enter the name of the file: ')
-         try:
-            sample_fh = open(sample_file,'r')
-            samples = [sample_fh.read()]
-            sample_fh.close()
-         except:
-            print 'Something went wrong. Sorry! Please try again.'
-            selection = 'failure'
-         
-      elif selection == '3':
-         samples = [raw_input('Please enter your ciphertext: ')]
+class ImportClearCommand(Command):
+   def run(self, line):
+      feathermodules.samples = []
 
-      else:
-         print 'Sorry, your selection wasn\'t recognized.'
 
-   return samples
+import_sample = Command('import', help='Import samples for analysis', dynamic_args=True)
 
-attack_selection_prompt = """
-How do you want to select attacks to run?
+import_multifile = ImportMultiFileCommand(
+   'multifile',
+   help='Import multiple newline-separated samples from one file',
+   dynamic_args=True)
+import_singlefile = ImportSingleFileCommand(
+   'singlefile',
+   help='Import a single file as a raw sample',
+   dynamic_args=True)
+import_manualentry = ImportManualEntryCommand(
+   'manualentry',
+   help='Manually enter a single sample',
+   dynamic_args=True)
+import_clear = ImportClearCommand(
+   'clear',
+   help='Clear current sample set',
+   dynamic_args=True)
 
-a) Analyze samples
-m) Manual selection, skip analysis
-s) Search for a module
-p) Crypto autopwn
-b) Go back
-q) Quit
+import_sample.addChild(import_multifile)
+import_sample.addChild(import_singlefile)
+import_sample.addChild(import_manualentry)
+import_sample.addChild(import_clear)
 
-Please enter your choice: """
-def get_attack_selection_method():
-   attack_selection = ''
-   while True:
-      attack_selection = raw_input(attack_selection_prompt).strip().lower()
-      if attack_selection in ['a', 'm', 's', 'p', 'b']:
-         return attack_selection
-      elif attack_selection == 'q':
-         print 'Thanks for using FeatherDuster!'
-         exit(0)
-      else:
-         print 'Sorry, your input was not recognized. Please try again.'
+# use
+class UseCommand(Command):
+   def args(self):
+      return feathermodules.module_list.keys()
+   def run(self, line):
+      feathermodules.selected_attack = line.split()[-1]
 
+use = UseCommand('use', help='Select the module to use', dynamic_args=True)
+
+# analyze
+class AnalyzeCommand(Command):
+   def run(self, line):
+      print '[+] Analyzing samples...'
+      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True, do_more_checks=True)
+      if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
+         feathermodules.samples = analysis_results['decoded_ciphertexts']
+      print ''
+      print '[+] Suggested modules:'
+      for attack in feathermodules.module_list.keys():
+         if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
+            print "%s - %s" % (attack, feathermodules.module_list[attack]['description'])
    
-#
-#--------
+analyze = AnalyzeCommand('analyze', help='Analyze/decode samples', dynamic_args=True)
+
+
+# autopwn
+class AutopwnCommand(Command):
+   def run(self, line):
+      print '[+] Analyzing samples...'
+      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True, do_more_checks=True)
+      if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
+         feathermodules.samples = analysis_results['decoded_ciphertexts']
+      for attack in feathermodules.module_list.keys():
+         if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
+            print feathermodules.module_list[attack]['attack_function'](feathermodules.samples)
+   
+autopwn = AutopwnCommand('autopwn', help='Analyze samples and run all attacks', dynamic_args=True)
+
+
+# search
+class SearchCommand(Command):
+   def run(self, line):
+      matching_modules = []
+      search_param = line.split()[-1].lower()
+      for attack in feathermodules.module_list.keys():
+         if attack.lower().find(search_param) != -1:
+            matching_modules.append(attack)
+         elif feathermodules.module_list[attack]['description'].lower().find(search_param) != -1:
+            matching_modules.append(attack)
+         elif search_param in feathermodules.module_list[attack]['keywords']:
+            matching_modules.append(attack)
+      for module in matching_modules:
+         print "%s - %s" % (attack, feathermodules.module_list[attack]['description'])
+      
+search = SearchCommand('search', help='Search module names and descriptions by keyword')
+
+
+# samples
+class SamplesCommand(Command):
+   def run(self, line):
+      print '-' * 40
+      for sample in feathermodules.samples:
+         print repr(sample)
+      print '-' * 40
+
+samples = SamplesCommand('samples', help='Show samples')
+
+
+# modules
+class ModulesCommand(Command):
+   def run(self, line):
+      for attack in feathermodules.module_list.keys():
+         print "%s - %s" % (attack, feathermodules.module_list[attack]['description'])
+
+modules = ModulesCommand('modules', help='Show all available modules')
+
+
+# run
+class RunCommand(Command):
+   def run(self, line):
+      print feathermodules.module_list[feathermodules.selected_attack]['attack_function'](feathermodules.samples)
+
+run = RunCommand('run', help='Run the currently selected module')
+
+
+# Build the console
+fd_console = Console(prompt='\nFeatherDuster [no module selected]', prompt_delim='>')
+
+fd_console.addChild(import_sample)
+fd_console.addChild(use)
+fd_console.addChild(analyze)
+fd_console.addChild(autopwn)
+fd_console.addChild(search)
+fd_console.addChild(samples)
+fd_console.addChild(modules)
+fd_console.addChild(run)
+
 
 #--------
 # Main menu
 #
-print 'Welcome to FeatherDuster!'
+print 'Welcome to FeatherDuster!\n'
 
-while True:
-   no_more = False
-   samples = []
-   while no_more == False:
-      if len(sys.argv) >= 2:
-         for filename in sys.argv[1:]:
-            sample_file = filename
-            sample_fh = open(sample_file,'r')
-            samples.append(sample_fh.read())
-         sys.argv = []
-      else:
-         samples.extend(import_samples())
-      if raw_input('Would you like to enter additional samples (y/N)?').lower() not in ['y','yes']:
-         no_more = True 
+for filename in sys.argv[1:]:
+   sample_file = filename
+   sample_fh = open(sample_file,'r')
+   feathermodules.samples.append(sample_fh.read())
+   sample_fh.close()
 
-   # Build module list
-   attack_selection_method = get_attack_selection_method()
-   if attack_selection_method == 'b':
-      continue
-   elif attack_selection_method in ['a', 'p']:
-      print '[+] Analyzing samples...'
-      analysis_results = ca.analyze_ciphertext(samples, verbose=True, do_more_checks=True)
-      print ''
-      if analysis_results['decoded_ciphertexts'] != samples:
-         samples = analysis_results['decoded_ciphertexts']
-         if raw_input('The imported samples were encoded. Do you want to show the decoded samples (no)? ').lower() in ['y','yes']:
-            print 'Samples:\n' + '-'*40
-            for sample in samples:
-               print repr(sample)
-            print '-'*40 + '\n'
-   elif attack_selection_method == 's':
-      search_term = raw_input("Please enter your search term: ")
-      
+fd_console.loop()
 
-   # Present attack options
-   selected_attack = ''
-   while selected_attack.lower() not in ['back', 'b']:
-      attacks = feathermodules.module_list.keys()
-      if attack_selection_method in ['a', 'p']:
-         attacks_tmp = []
-         for attack in attacks:
-            if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
-               attacks_tmp.append(attack)
-         attacks = attacks_tmp
-      elif attack_selection_method == 's':
-         attacks_tmp = []
-         for attack in attacks:
-            keyword_match = False
-            for keyword in feathermodules.module_list[attack]['keywords']:
-               if string.find(keyword, search_term) >= 0:
-                  attacks_tmp.append(attack)
-                  keyword_match = True
-                  break 
-            if keyword_match:
-               continue
-            elif string.find(feathermodules.module_list[attack]['description'], search_term) >= 0:
-               attacks_tmp.append(attack)
-            elif string.find(attack, search_term) >= 0:
-               attacks_tmp.append(attack)
-
-         attacks = attacks_tmp
-      if len(attacks) == 0:
-         print 'No applicable attack modules are available.'
-         break
-      else:
-         print 'Attack modules:'
-
-      if attack_selection_method == 'p':
-         print 'Starting crypto autopwn. BANZAIIIIIII!!!'
-         for attack in attacks:
-            print "Launching attack module: %s" % attack
-            print feathermodules.module_list[attack]['attack_function'](samples)
-            print ''
-         break
-
-      else:
-         for attack in attacks:
-            print "%s - %s" % (attack, feathermodules.module_list[attack]['description'])
-         while True:
-            selected_attack = raw_input('Choose an attack from the listing above or type \'back\' or \'quit\': ')
-            if selected_attack in ['b','back']:
-               break
-            if selected_attack in ['q','quit']:
-               print 'Thanks for using FeatherDuster!'
-               exit(0)
-            if selected_attack in feathermodules.module_list.keys():
-               print feathermodules.module_list[selected_attack]['attack_function'](samples)
-            else:
-               print 'Sorry, I don\'t see this module in the list. Please try again.'
-            print ''
+print '\nThank you for using FeatherDuster!'
