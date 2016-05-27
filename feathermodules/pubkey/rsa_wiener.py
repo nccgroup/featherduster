@@ -49,5 +49,5 @@ feathermodules.module_list['rsa_wiener'] = {
    'attack_function':wiener_attack,
    'type':'pubkey',
    'keywords':['rsa_key'],
-   'description':'Use Wiener\'s attack on weak RSA keys to attempt to derive an a private key from its public key.'
+   'description':'Use Wiener\'s attack on weak RSA keys to attempt to derive a private key from its public key.'
 }
