@@ -19,5 +19,6 @@ feathermodules.module_list['multi_byte_xor'] = {
    'attack_function':multi_byte_xor_attack,
    'type':'stream',
    'keywords':['individually_low_entropy', 'collectively_low_entropy'],
-   'description':'A brute force attack against multi-byte XOR encrypted ciphertext.'
+   'description':'A brute force attack against multi-byte XOR encrypted ciphertext.',
+   'options':{}
 }

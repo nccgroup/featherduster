@@ -19,5 +19,6 @@ feathermodules.module_list['single_byte_xor'] = {
    'attack_function':single_byte_xor_attack,
    'type':'stream',
    'keywords':['individually_low_entropy'],
-   'description':'A brute force attack against single-byte XOR encrypted ciphertext.'
+   'description':'A brute force attack against single-byte XOR encrypted ciphertext.',
+   'options':{}
 }

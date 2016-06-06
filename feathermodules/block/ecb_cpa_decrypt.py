@@ -62,5 +62,6 @@ feathermodules.module_list['ecb_cpa_decrypt'] = {
    'attack_function':generate_ecb_cpa_decrypt_attack_script,
    'type':'block',
    'keywords':['ecb'],
-   'description':'Generate an attack script to decrypt a secret suffix added to data by an ECB mode encryption oracle.'
+   'description':'Generate an attack script to decrypt a secret suffix added to data by an ECB mode encryption oracle.',
+   'options':{}
 }

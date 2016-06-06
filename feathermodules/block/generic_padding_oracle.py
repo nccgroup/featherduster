@@ -129,5 +129,6 @@ feathermodules.module_list['padding_oracle'] = {
    'attack_function':generate_generic_padding_oracle_attack_script,
    'type':'block',
    'keywords':['block'],
-   'description':'Generate a generic padding oracle attack script skeleton.'
+   'description':'Generate a generic padding oracle attack script skeleton.',
+   'options':{}
 }

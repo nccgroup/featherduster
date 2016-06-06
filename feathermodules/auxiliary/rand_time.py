@@ -72,6 +72,7 @@ feathermodules.module_list['rand_time'] = {
    'attack_function':rand_seeded_with_time_check,
    'type':'auxiliary',
    'keywords':['random'],
-   'description':'A brute force attack attempting to match captured samples to the output of the Mersenne Twister PRNG seeded with the current system time.'
+   'description':'A brute force attack attempting to match captured samples to the output of the Mersenne Twister PRNG seeded with the current system time.',
+   'options':{}
 }
 

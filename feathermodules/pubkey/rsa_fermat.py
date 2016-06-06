@@ -47,5 +47,6 @@ feathermodules.module_list['rsa_fermat'] = {
    'attack_function':fermat_factor_attack,
    'type':'pubkey',
    'keywords':['rsa_key'],
-   'description':'Use Fermat\'s factorization method to attempt to derive an RSA private key from the public key.'
+   'description':'Use Fermat\'s factorization method to attempt to derive an RSA private key from the public key.',
+   'options':{}
 }
