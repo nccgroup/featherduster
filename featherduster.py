@@ -179,17 +179,15 @@ class RunCommand(Command):
       if len(feathermodules.samples) == 0:
          print 'No loaded samples. Please use the \'import\' command.'
          return False
-      try:
-         print feathermodules.selected_attack['attack_function'](feathermodules.samples)
-      except:
+      elif feathermodules.selected_attack_name not in feathermodules.module_list.keys():
          print 'Invalid module selection. Please use the \'use\' command.'
          return False
+      print feathermodules.selected_attack['attack_function'](feathermodules.samples)
 
 run = RunCommand('run', help='Run the currently selected module')
 
 
 # options
-# TODO: Eventually, migrate option selection out of feathermodules and into FD itself
 class OptionsCommand(Command):
    def run(self, line):
       if feathermodules.selected_attack_name not in feathermodules.module_list.keys():
@@ -209,19 +207,22 @@ class OptionsCommand(Command):
                   print "%s\t%s" % (option, default)
 
 
+# set
 class SetCommand(Command):
    def run(self, line):
       line_split = line.split()
       # set option_name value
-      if len(line_split) < 3:
-         print 'Usage: set <option> <value>'
+      if not (len(line_split) == 2 and '=' in line_split[1]):
+         print 'Usage: set <option>=<value>'
          return False
-      print 'debug'
-      feathermodules.current_options[line_split[2]] = ''.join(line_split[2:])
+      option = line_split[1].split('=')[0]
+      value = line_split[1].split('=')[1]
+      feathermodules.current_options[option] = value
    def args(self):
       return feathermodules.selected_attack['options'].keys()
 
 
+# unset
 class UnsetCommand(Command):
    def run(self, line):
       line_split = line.split()
@@ -235,7 +236,7 @@ class UnsetCommand(Command):
       return feathermodules.selected_attack['options'].keys()
 
 
-set_command = SetCommand('set', help='Set an option', dynamic_args=True)
+set_command = SetCommand('set', help='Set an option (i.e., "set num_answers=3"', dynamic_args=True)
 unset = UnsetCommand('unset', help='Revert an option to its default value', dynamic_args=True)
 options = OptionsCommand('options', help='Show the current option values', dynamic_args=True)
 
