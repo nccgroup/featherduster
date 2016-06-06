@@ -1,7 +1,7 @@
 import cryptanalib as ca
 from Crypto import Random
 
-key = Random.new().read(40)
+key = Random.new().read(50)
 
 plaintexts = [
 'Who da man? I am! I am the man!',
@@ -32,6 +32,6 @@ for plaintext in plaintexts:
    ciphertexts.append(ca.sxor(key, plaintext))
 
 print 'Testing many-time pad solver...'
-print ca.break_many_time_pad(ciphertexts)
+print ca.break_many_time_pad(ciphertexts, verbose=True)
 if raw_input('Did this decrypt correctly (yes)?').lower() not in ['y','yes','']:
    raise Exception('Many time pad solver failed.')

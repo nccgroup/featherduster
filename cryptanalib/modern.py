@@ -988,8 +988,38 @@ def break_many_time_pad(ciphertexts, pt_freq_table=frequency.frequency_tables['e
       generate_frequency_table()
    verbose - (bool) Whether or not to show progress
    '''
+   def right_pad_with_none(array, length):
+      array_tmp = []
+      for item in array:
+         item_list = list(item)
+         item_list.extend([None] * (length - len(item_list)))
+         array_tmp.append(item_list)
+      return array_tmp
+
+
+   # Can't do this with <2 samples
+   if len(ciphertexts) < 2:
+      if verbose:
+         print '[!] This attack requires two or more samples.'
+      return False
+      
+   # Need to truncate the longest ciphertext to the length of the second longest
+   ciphertexts = sorted(ciphertexts, key=len)
+   longest_ciphertexts = ciphertexts[-2:]
+   longest_ct_len = len(longest_ciphertexts[1])
+   second_longest_ct_len = len(longest_ciphertexts[0])
+   # If the two longest ciphertexts aren't already the same length
+   length_delta = longest_ct_len - second_longest_ct_len
+   if length_delta != 0:
+      ciphertexts = ciphertexts[:-1] + [ciphertexts[-1][:-length_delta]]
+
+   # Pad the other ciphertexts out with None
+   pad_to_length = len(longest_ciphertexts[0])
+   ciphertexts = right_pad_with_none(ciphertexts, pad_to_length)
+
    zipped_plaintexts = []
-   zipped_ciphertexts = [''.join(a) for a in zip(*ciphertexts)]
+   # Separate ciphertext bytes into groups positionally
+   zipped_ciphertexts = zip(*ciphertexts)
    if verbose:
       num_slices = len(zipped_ciphertexts)
       num_current_slice = 0
@@ -998,10 +1028,25 @@ def break_many_time_pad(ciphertexts, pt_freq_table=frequency.frequency_tables['e
          num_current_slice += 1
          sys.stdout.write("\rBrute forcing slice %d of %d" % (num_current_slice, num_slices))
          sys.stdout.flush()
-      zipped_plaintexts.append(break_single_byte_xor(zipped_ciphertext, pt_freq_table=pt_freq_table, num_answers=1, single_chars_only=True)[0][0])
+      # Remove padding for single byte XOR solve
+      joined_zipped_ciphertext = ''.join([x for x in zipped_ciphertext if x is not None])
+      result = break_single_byte_xor(joined_zipped_ciphertext, pt_freq_table=pt_freq_table, num_answers=1, single_chars_only=True)[0][0]
+      result_tmp = list(result)
+      result = []
+      # Add it back for rearranging
+      for index in xrange(len(zipped_ciphertext)):
+         if zipped_ciphertext[index] != None:
+            result.append(result_tmp.pop(0))
+         else:
+            result.append(None)
+      zipped_plaintexts.append(result)
    if verbose:
       print ''
-   return [''.join(a) for a in zip(*zipped_plaintexts)]
+   final_result = []
+   for plaintext in zip(*zipped_plaintexts):
+      final_result.append(''.join([char for char in plaintext if char is not None]))
+            
+   return final_result
 
 
 
