@@ -1,9 +1,14 @@
 import cryptanalib as ca
 import feathermodules
+from time import sleep
 from Crypto.PublicKey import RSA
 
-def wiener_attack(ciphertexts):
-   arguments = get_arguments(ciphertexts)
+def rsa_wiener_attack(ciphertexts):
+   options = dict(feathermodules.current_options)
+   options = prepare_options(options, ciphertexts)
+   if options == False:
+      print '[*] Could not process options.'
+      return False
    answers = []
    for ciphertext in ciphertexts:
       try:
@@ -16,39 +21,33 @@ def wiener_attack(ciphertexts):
       except:
          continue
 
-      p = ca.wiener(modulus, exponent, minutes=arguments['minutes'], verbose=True)
-      answers.append((modulus, exponent, p))
+      p = ca.wiener(modulus, exponent, minutes=options['minutes_to_wait'], verbose=True)
+      if p != 1:
+         answers.append( (modulus, exponent, ca.derive_d_from_pqe(p,modulus/p,exponent)) )
    
-   for n, e, p in answers:
-      try:
-         d = ca.derive_d_from_pqe(p, n/p, e)
-         key = RSA.construct((n, e, d))
-         print "Found private key:\n%s" % key.exportKey()
-      except:
-         print "\nAttack failed, key is too strong."
+   for answer in answers:
+      key = RSA.construct(answer)
+      print "Found private key:\n%s" % key.exportKey()
    
    return ''
 
       
 
-def get_arguments(ciphertexts):
-   arguments = {}
-   arguments['ciphertexts'] = ciphertexts
-   while True:
-      minutes = raw_input('Please input the number of minutes you\'re willing to wait for each factorization to complete (fractional minutes are accepted): ')
-      try:
-         arguments['minutes'] = float(minutes)
-         break
-      except ValueError:
-         print "Sorry, I couldn't turn that into a number. Please try again."
-     
-   return arguments
+def prepare_options(options, ciphertexts):
+   try:
+      options['minutes_to_wait'] = float(options['minutes_to_wait'])
+   except:
+      print '[*] Couldn\'t convert minutes provided to a number.'
+      return False
+   return options
 
 
 feathermodules.module_list['rsa_wiener'] = {
-   'attack_function':wiener_attack,
+   'attack_function':rsa_wiener_attack,
    'type':'pubkey',
    'keywords':['rsa_key'],
-   'description':'Use Wiener\'s attack on weak RSA keys to attempt to derive a private key from its public key.',
-   'options':{}
+   'description':'Use Wiener\'s factorization method to attempt to derive an RSA private key from the public key.',
+   'options':{
+      'minutes_to_wait': '0.5'
+   }
 }

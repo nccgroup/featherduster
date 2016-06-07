@@ -11,6 +11,11 @@ from ishell.console import Console
 from ishell.command import Command
 
 import feathermodules
+
+feathermodules.samples = []
+feathermodules.selected_attack_name = ''
+feathermodules.current_options = {}
+
 from feathermodules.stream import *
 from feathermodules.block import *
 from feathermodules.classical import *
@@ -19,10 +24,6 @@ from feathermodules.custom import *
 from feathermodules.pubkey import *
 
 import cryptanalib as ca
-
-feathermodules.samples = []
-feathermodules.selected_attack_name = ''
-feathermodules.current_options = {}
 
 # import
 class ImportMultiFileCommand(Command):
