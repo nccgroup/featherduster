@@ -16,5 +16,6 @@ feathermodules.module_list['many_time_pad'] = {
    'attack_function':many_time_pad_attack,
    'type':'stream',
    'keywords':['key_reuse', 'collectively_low_entropy'],
-   'description':'A statistical attack against keystream reuse in various stream ciphers.'
+   'description':'A statistical attack against keystream reuse in various stream ciphers.',
+   'options':{}
 }

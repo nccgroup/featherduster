@@ -8,9 +8,15 @@ def rand_seeded_with_time_check(samples):
       random.seed(seed)
       return random.randint(lowest, highest)
    
-   arguments = get_arguments()
-   prng_outputs = map(lambda timestamp: seed_and_generate_value(timestamp, arguments['lowest_value'], arguments['highest_value']), arguments['timestamps'])
-   converted_samples = map(lambda sample: int(sample, arguments['base']), samples)
+   options = feathermodules.current_options
+   options_tmp = dict(options)
+   check_arguments(options_tmp)
+   if options_tmp == False:
+      return False
+   timestamps = range(options_tmp['base_timestamp']-86400,options_tmp['base_timestamp']+86400)
+
+   prng_outputs = map(lambda timestamp: seed_and_generate_value(timestamp, options_tmp['lowest'], options_tmp['highest']), timestamps)
+   converted_samples = map(lambda sample: int(sample, options_tmp['base']), samples)
    matches = set(prng_outputs) & set(converted_samples)
    if matches:
       print '[!] %d matches were discovered! This suggests random outputs are based on Mersenne Twister output seeded with the current system time.' % len(matches)
@@ -18,60 +24,37 @@ def rand_seeded_with_time_check(samples):
       print '[+] No matches discovered.'
          
       
-sample_format_menu = """Which format are the samples in?
 
-1) Hex (i.e. 4e813eef)
-2) Decimal (i.e. 971412412)
-
-Please enter a number: """
-
-def get_arguments():
-   arguments = {}
-   use_current_time = raw_input('Do you want to use the current time (yes)? ')
-   if use_current_time.lower() in ['y','yes','']:
-      base_timestamp = int(time())
-   else:
-      base_timestamp = raw_input('Please enter a time in Unix timestamp format: ')
-      try:
-         base_timestamp = int(base_timestamp)
-      except ValueError:
-         print 'Bad timestamp value. Defaulting to current time.'
-         base_timestamp = int(time())
-   arguments['timestamps'] = range(base_timestamp-86400,base_timestamp+86400)
-   while True:
-      sample_format = raw_input(sample_format_menu)
-      if sample_format == '1':
-         arguments['base'] = 16
-         break
-      elif sample_format == '2':
-         arguments['base'] = 10
-         break
+def check_arguments(options):
+   try:
+      print '[+] Checking provided timestamp...'
+      options['base_timestamp'] = int(options['base_timestamp'])
+      print '[+] Checking provided format...'
+      if options['format'].lower() in ['hex', 'h']:
+         options['base'] = 16
+      elif options['format'].lower() in ['dec', 'd', 'decimal']:
+         options['base'] = 10
       else:
-         print 'Sorry, your input was not recognized. Please try again.'
-         continue
-   while True:
-      lowest = raw_input('Please enter the lowest possible value a sample could be (for example, if samples are in hex format and can be between 0x00000000 and 0xffffffff, enter "00000000"): ')
-      try:
-         arguments['lowest_value'] = int(lowest, arguments['base'])
-         break
-      except ValueError:
-         print 'Bad value received. Try again.'
-         continue
-   while True:
-      highest = raw_input('Please enter the highest possible value a sample could be (for example, if samples are in hex format and can be between 0x00000000 and 0xffffffff, enter "FFFFFFFF"): ')
-      try:
-         arguments['highest_value'] = int(highest, arguments['base'])
-         break
-      except ValueError:
-         print 'Bad value received. Try again.'
-         continue
-   return arguments
+         print '[*] Format option was not recognized. Please use \'hex\' or \'dec\'.'
+      print '[+] Checking lowest possible value...'
+      options['lowest'] = int(options['lowest'], options['base'])
+      print '[+] Checking highest possible value...'
+      options['highest'] = int(options['highest'], options['base'])
+      return options
+   except:
+      print '[*] One or more numeric arguments could not be converted to a number. Please try again.'
+      return False 
 
 
 feathermodules.module_list['rand_time'] = {
    'attack_function':rand_seeded_with_time_check,
    'type':'auxiliary',
    'keywords':['random'],
-   'description':'A brute force attack attempting to match captured samples to the output of the Mersenne Twister PRNG seeded with the current system time.'
+   'description':'A brute force attack attempting to match captured samples to the output of the Mersenne Twister PRNG seeded with the current system time.',
+   'options':{'base_timestamp': str(int(time())),
+      'format': 'hex',
+      'lowest': '00000000',
+      'highest': 'FFFFFFFF'
+   }
 }
 

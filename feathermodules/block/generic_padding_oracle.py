@@ -40,67 +40,53 @@ print "The decrypted version of your input is: " + ca.padding_oracle_decrypt(pad
 """
 
 def generate_generic_padding_oracle_attack_script(ciphertexts):
-   arguments = get_arguments(ciphertexts)
-   while True:
-      filename = raw_input('Please enter a file name for the padding oracle script: ')
-      try:
-         print '[+] Attempting to write script...'
-         fh = open(filename, 'w')
-         fh.write(po_attack_script_skeleton % (arguments['blocksize'],arguments['padding_type'],arguments['iv'],arguments['hollywood'],arguments['blocksize']))
-         fh.close()
-         break
-      except:
-         print '[*] Couldn\'t write to the file with the name provided. Please try again.'
-         continue
-   print '[+] Done! Your script is available at %s' % filename
+   options = dict(feathermodules.current_options)
+   options = prepare_options(options, ciphertexts)
+   if options == False:
+      print '[*] Options could not be validated. Please try again.'
+      return False
+   try:
+      print '[+] Attempting to write script...'
+      fh = open(options['filename'], 'w')
+      fh.write(po_attack_script_skeleton % (options['blocksize'],options['padding_type'],options['iv'],options['hollywood'],options['blocksize']))
+      fh.close()
+   except:
+      print '[*] Couldn\'t write to the file with the name provided. Please try again.'
+      return False
+   print '[+] Done! Your script is available at %s' % options['filename']
    print '[+] The script as-is will not be functional, please edit the padding_oracle() function as described in the generated script.'
 
-def get_arguments(ciphertexts):
-   arguments = {}
-   arguments['ciphertexts'] = ciphertexts
-   analysis_results = ca.analyze_ciphertext(ciphertexts)
-   blocksize = analysis_results['blocksize']
-   while True:
-      print '[+] Block size detected as %d' % blocksize
-      blocksize_answer = raw_input('Is this correct (yes)? ')
-      if blocksize_answer.lower() in ['', 'yes', 'y']:
-         arguments['blocksize'] = blocksize
-         break
-      else:
-         blocksize_answer = raw_input('Please enter the correct blocksize: ')
-         try:
-            arguments['blocksize'] = int(blocksize_answer)
-            break
-         except:
-            print '[*] Answer could not be interpreted as a number. Defaulting to detected block size.'
-            arguments['blocksize'] = blocksize
-            continue
+def prepare_options(options, ciphertexts):
+   if options['blocksize'] == 'auto':
+      analysis_results = ca.analyze_ciphertext(ciphertexts)
+      if analysis_results['blocksize'] == 0:
+         print '[*] Couldn\'t detect a common blocksize.'
+         return False
+      options['blocksize'] = analysis_results['blocksize']
+   else:
+      try:
+         options['blocksize'] = int(options['blocksize'])
+      except:
+         print '[*] Blocksize could not be interpreted as a number.'
+         return False
    
    # If we actually supported anything but pkcs7, here we would do:
    # arguments['padding_type'] = raw_input(padding_menu)
    # But we don't, so we:
-   arguments['padding_type'] = 'pkcs7'
+   options['padding_type'] = 'pkcs7'
    
-   while True:
-      iv_answer = raw_input('Do you want to specify an IV (no)? ')
-      if iv_answer.lower() not in ['','n','no']:
-         iv_hex = raw_input('What is the IV (hex encoded)? ')
-         try:
-            iv_raw = iv_hex.decode('hex')
-            if len(iv_raw) == arguments['blocksize']:
-               arguments['iv'] = iv_raw
-               break
-            else:
-               print '[*] Your IV does not match the blocksize of %d.' % arguments['blocksize']
-               continue
-         except:
-            arguments['iv'] = None
-            print '[*] You entered something that wasn\'t proper hex and wasn\'t \'no\'.'
-            continue
-      else:
-         print '[+] Defaulting to all-null IV. If the IV is not a null block, expect the first block of output to be garbled.'
-         arguments['iv'] = None
-         break
+   if options['iv'] == '':
+      print '[+] No IV provided, defaulting to null block.'
+      options['iv'] = '00'*options['blocksize']
+   else:
+      try:
+         options['iv'].decode('hex')
+      except:
+         print '[*] IV was not in the correct format. Please provide a hex-encoded IV with length matching the blocksize.'
+         return False
+      if (len(options['iv'])/2) != options['blocksize']:
+         print '[*] IV was not the correct length. Please provide a hex-encoded IV with length matching the blocksize.'
+         return False
    
    # We don't use this yet, commented out for now.
    '''
@@ -119,15 +105,22 @@ def get_arguments(ciphertexts):
          break
    '''
 
-   hollywood_answer = raw_input('Do you want hacker movie style output at a minor cost to performance (no I am lame)? ')
-   arguments['hollywood'] = (hollywood_answer.lower() not in ['','n','no','no i am lame'])
+   options['hollywood'] = (options['hollywood'].lower() not in ['','n','no','no i am lame'])
  
-   return arguments
+   return options
 
 
 feathermodules.module_list['padding_oracle'] = {
    'attack_function':generate_generic_padding_oracle_attack_script,
    'type':'block',
    'keywords':['block'],
-   'description':'Generate a generic padding oracle attack script skeleton.'
+   'description':'Generate a generic padding oracle attack script skeleton.',
+   'options':{
+      'filename':'padding_oracle_decrypt.py',
+      'hollywood':'no',
+      #'padding_type':'pkcs7',
+      #'prefix':'',
+      'blocksize':'auto',
+      'iv':''      
+   }
 }

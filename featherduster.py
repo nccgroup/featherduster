@@ -11,6 +11,11 @@ from ishell.console import Console
 from ishell.command import Command
 
 import feathermodules
+
+feathermodules.samples = []
+feathermodules.selected_attack_name = ''
+feathermodules.current_options = {}
+
 from feathermodules.stream import *
 from feathermodules.block import *
 from feathermodules.classical import *
@@ -19,9 +24,6 @@ from feathermodules.custom import *
 from feathermodules.pubkey import *
 
 import cryptanalib as ca
-
-feathermodules.samples = []
-feathermodules.selected_attack = ''
 
 # import
 class ImportMultiFileCommand(Command):
@@ -91,7 +93,10 @@ class UseCommand(Command):
       if line.split()[-1] not in feathermodules.module_list.keys():
          print 'Invalid module selection. Please try again.'
       else:
-         feathermodules.selected_attack = line.split()[-1]
+         feathermodules.selected_attack = feathermodules.module_list[ line.split()[-1] ]
+         feathermodules.selected_attack_name = line.split()[-1]
+         feathermodules.current_options = feathermodules.selected_attack['options']
+    
 
 use = UseCommand('use', help='Select the module to use', dynamic_args=True)
 
@@ -175,21 +180,67 @@ class RunCommand(Command):
       if len(feathermodules.samples) == 0:
          print 'No loaded samples. Please use the \'import\' command.'
          return False
-      if feathermodules.selected_attack not in feathermodules.module_list.keys():
+      elif feathermodules.selected_attack_name not in feathermodules.module_list.keys():
          print 'Invalid module selection. Please use the \'use\' command.'
          return False
-      print feathermodules.module_list[feathermodules.selected_attack]['attack_function'](feathermodules.samples)
+      print feathermodules.selected_attack['attack_function'](feathermodules.samples)
 
 run = RunCommand('run', help='Run the currently selected module')
 
 
 # options
 class OptionsCommand(Command):
-   # TODO: Eventually, migrate option selection out of feathermodules and into FD itself
    def run(self, line):
-      print 'Currently selected module: %s' % feathermodules.selected_attack
+      if feathermodules.selected_attack_name not in feathermodules.module_list.keys():
+         print 'Please select a valid module first.'
+         return False
+      else:
+         print ''
+         print 'Currently selected module: %s' % feathermodules.selected_attack_name
+         print '-' * 40
+         if len(feathermodules.selected_attack['options'].items()) == 0:
+            print 'No options to configure.'
+         else:
+            for option, default in feathermodules.selected_attack['options'].items():
+               try:
+                  print "%s\t%s" % (option, feathermodules.current_options[option])
+               except:
+                  print "%s\t%s" % (option, default)
 
-options = OptionsCommand('options', help='Show current configuration options', dynamic_args=True)
+
+# set
+class SetCommand(Command):
+   def run(self, line):
+      line_split = line.split()
+      # set option_name value
+      if not (len(line_split) == 2 and '=' in line_split[1]):
+         print 'Usage: set <option>=<value>'
+         return False
+      option = line_split[1].split('=')[0]
+      value = line_split[1].split('=')[1]
+      feathermodules.current_options[option] = value
+   def args(self):
+      return feathermodules.selected_attack['options'].keys()
+
+
+# unset
+class UnsetCommand(Command):
+   def run(self, line):
+      line_split = line.split()
+      # unset option_name
+      if len(line_split) != 2:
+         print 'Usage: unset <option>'
+         return False
+      option = line_split[1]
+      feathermodules.current_options[option] = feathermodules.selected_attack['options'][option]
+   def args(self):
+      return feathermodules.selected_attack['options'].keys()
+
+
+set_command = SetCommand('set', help='Set an option (i.e., "set num_answers=3"', dynamic_args=True)
+unset = UnsetCommand('unset', help='Revert an option to its default value', dynamic_args=True)
+options = OptionsCommand('options', help='Show the current option values', dynamic_args=True)
+
 
 # Build the console
 fd_console = Console(prompt='\nFeatherDuster', prompt_delim='>')
@@ -203,6 +254,8 @@ fd_console.addChild(samples)
 fd_console.addChild(modules)
 fd_console.addChild(run)
 fd_console.addChild(options)
+fd_console.addChild(set_command)
+fd_console.addChild(unset)
 
 
 #--------

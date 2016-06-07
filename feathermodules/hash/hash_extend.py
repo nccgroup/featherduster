@@ -69,5 +69,6 @@ feathermodules.module_list['hash_extend_attack'] = {
    'attack_function':hash_extend_attack,
    'type':'hash',
    'keywords':['md_hashes','sha1_hashes','sha2_hashes'],
-   'description':'Given any hash, generate the equivalent hash for the data of your choosing appended to the original input.'
+   'description':'Given any hash, generate the equivalent hash for the data of your choosing appended to the original input.',
+   'options':{}
 }
