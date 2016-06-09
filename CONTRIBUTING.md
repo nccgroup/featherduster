@@ -6,7 +6,7 @@ If you'd like to contribute to FeatherDuster or Cryptanalib, you can do so in a 
 * Contributing attack or helper functions to Cryptanalib
 * Contributing FeatherModules
 
-The official page for FeatherDuster and Cryptanalib can be found on (https://github.com/nccgroup/featherduster)[Github].
+The official page for FeatherDuster and Cryptanalib can be found at https://github.com/nccgroup/featherduster.
 
 # Writing FeatherModules
 If you want to write a FeatherModule, the format is relatively simple. A FeatherModule requires:
