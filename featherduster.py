@@ -262,6 +262,18 @@ fd_console.addChild(unset)
 #--------
 # Main menu
 #
+
+for filename in sys.argv[1:]:
+   if filename in ['-h', '--help']:
+      print 'Usage: python featherduster.py [ciphertext file 1] ... [ciphertext file n]'
+      exit()
+   try:
+      sample_fh = open(filename,'r')
+      feathermodules.samples.append(sample_fh.read())
+      sample_fh.close()
+   except:
+      continue
+
 print """Welcome to FeatherDuster!
 
 To get started, use 'import' to load samples.
@@ -271,12 +283,6 @@ Finally, use 'run' to run the attack and see its output.
 
 For a command reference, press Enter on a blank line.
 """
-
-for filename in sys.argv[1:]:
-   sample_file = filename
-   sample_fh = open(sample_file,'r')
-   feathermodules.samples.append(sample_fh.read())
-   sample_fh.close()
 
 fd_console.loop()
 
