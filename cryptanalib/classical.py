@@ -19,7 +19,76 @@ import operator
 # challenges. In general, you won't see cryptosystems vulnerable to these attacks
 # being used in the real world. If you do, you should laugh.
 #--------------------------
+morse_table = {
+   'a': '.-',
+   'b': '-...',
+   'c': '-.-.',
+   'd': '-..',
+   'e': '.',
+   'f': '..-.',
+   'g': '--.',
+   'h': '....',
+   'i': '..',
+   'j': '.---',
+   'k': '-.-',
+   'l': '.-..',
+   'm': '--',
+   'n': '-.',
+   'o': '---',
+   'p': '.--.',
+   'q': '--.-',
+   'r': '.-.',
+   's': '...',
+   't': '-',
+   'u': '..-',
+   'v': '...-',
+   'w': '.--',
+   'x': '-..-',
+   'y': '-.--',
+   'z': '--..',
+   '1': '.----',
+   '2': '..---',
+   '3': '...--',
+   '4': '....-',
+   '5': '.....',
+   '6': '-....',
+   '7': '--...',
+   '8': '---..',
+   '9': '----.',
+   '0': '-----'
+}
 
+def morse_decode(text, dot='.', dash='-', space=' '):
+   '''
+   Decodes a Morse encoded message. Optionally, you can provide an alternate
+   single character for dot, dash, and space.
+
+   Parameters:
+   text - (string) A message to decode
+   dot - (char) An alternate dot char
+   dash - (char) An alternate dash char
+   space - (char) A char to split the text on
+   '''
+   inverse_morse_table = map(lambda (x,y): (y,x), morse_table.items())
+   dot_dash_trans = string.maketrans('.-', dot+dash)
+   inverse_morse_table = [(string.translate(x,dot_dash_trans), y) for (x,y) in inverse_morse_table]
+   inverse_morse_table = dict(inverse_morse_table)
+   return ''.join([inverse_morse_table[char] for char in text.split(space) if char in inverse_morse_table.keys()])
+
+
+def morse_encode(text, dot='.', dash='-', space=' '):
+   '''
+   Encodes text into Morse code.
+   '''
+   dot_dash_trans = string.maketrans('.-', dot+dash)
+   translated_morse_table = map(lambda (x,y): (x, string.translate(y, dot_dash_trans)), morse_table.items())
+   translated_morse_table = dict(translated_morse_table)
+   output = []
+   for char in text.lower():
+      if char in string.lowercase + string.digits:
+         output.append(translated_morse_table[char])
+   return space.join(output)
+   
 '''
 TODO: this sucks, add digraph/trigraph detection? word detection?
 consider implementing quipqiup method
