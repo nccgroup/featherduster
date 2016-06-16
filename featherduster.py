@@ -131,6 +131,7 @@ class AutopwnCommand(Command):
          feathermodules.samples = analysis_results['decoded_ciphertexts']
       for attack in feathermodules.module_list.keys():
          if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
+            print 'Running module: %s' % attack
             feathermodules.current_options = feathermodules.module_list[attack]['options']
             print feathermodules.module_list[attack]['attack_function'](feathermodules.samples)
    
