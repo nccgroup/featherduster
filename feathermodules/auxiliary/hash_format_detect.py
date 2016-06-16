@@ -5,7 +5,13 @@ def detect_hash_format(hashes):
    options = feathermodules.current_options
    if options['words'] == '' or ',' not in options['words']:
       options['words'] = raw_input('Please enter words that might be in the plaintext version of the hashes, comma-separated: ').split(',')
-   return ca.detect_hash_format(options['words'],hashes)
+   else:
+      options['words'] = options['words'].split(',')
+   result = ca.detect_hash_format(options['words'],hashes)
+   if result == False:
+      return '[+] Could not detect hash format.'
+   else:
+      return '[!] Plaintext: %s\n[!] Hash algorithm: %s' % result
 
 
 feathermodules.module_list['detect_hash_format'] = {

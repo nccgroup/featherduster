@@ -2,17 +2,22 @@ import cryptanalib as ca
 import feathermodules
 
 def single_byte_xor_attack(ciphertexts):
-   arguments = get_arguments(ciphertexts)
+   options = dict(feathermodules.current_options)
    results = []
    print '[+] Running single-byte XOR brute force attack...'
-   for ciphertext in arguments['ciphertexts']:
-      results.append(ca.break_single_byte_xor(ciphertext))
-   return results
-
-def get_arguments(ciphertexts):
-   arguments = {}
-   arguments['ciphertexts'] = ciphertexts
-   return arguments
+   try:
+      num_answers = int(options['number_of_answers'])
+   except:
+      return '[*] Could not interpret number_of_answers option as a number.'
+   if num_answers > 256:
+      return '[*] Bad option value for number_of_answers.'
+   for ciphertext in ciphertexts:
+      results.append(ca.break_single_byte_xor(ciphertext, num_answers=num_answers))
+   output = 'Best candidate decryptions:\n' + '-'*40 + '\n'
+   for result in results:
+      output += '\n'.join(['%r (score: %f)' % (candidate_decryption[0],candidate_decryption[1][0]) for candidate_decryption in result])
+      output += '\n'
+   return output
 
 
 feathermodules.module_list['single_byte_xor'] = {
@@ -20,5 +25,7 @@ feathermodules.module_list['single_byte_xor'] = {
    'type':'stream',
    'keywords':['individually_low_entropy'],
    'description':'A brute force attack against single-byte XOR encrypted ciphertext.',
-   'options':{}
+   'options':{
+      'number_of_answers': '3'
+   }
 }

@@ -2,17 +2,23 @@ import cryptanalib as ca
 import feathermodules
 
 def multi_byte_xor_attack(ciphertexts):
-   arguments = get_arguments(ciphertexts)
+   options = prepare_options(dict(feathermodules.current_options))
    results = []
-   print 'Running multi-byte XOR brute force attack...'
-   for ciphertext in arguments['ciphertexts']:
-      results.append(ca.break_multi_byte_xor(ciphertext, verbose=True)[0])
-   return results
+   print '[+] Running multi-byte XOR brute force attack...'
+   for ciphertext in ciphertexts:
+      result = '\nBest candidate decryptions:\n' + '-'*40 + '\n'
+      result_list = ca.break_multi_byte_xor(ciphertext, verbose=True, num_answers=options['number_of_answers'])
+      result += '\n'.join([repr(result_list_item) for result_list_item in result_list])
+      results.append(result)
+   return '\n\n'.join(results)
 
-def get_arguments(ciphertexts):
-   arguments = {}
-   arguments['ciphertexts'] = ciphertexts
-   return arguments
+def prepare_options(options):
+   try:
+      options['number_of_answers'] = int(options['number_of_answers'])
+   except:
+      print '[*] Could not interpret number of answers option as a number.'
+      return False
+   return options
 
 
 feathermodules.module_list['multi_byte_xor'] = {
@@ -20,5 +26,7 @@ feathermodules.module_list['multi_byte_xor'] = {
    'type':'stream',
    'keywords':['individually_low_entropy', 'collectively_low_entropy'],
    'description':'A brute force attack against multi-byte XOR encrypted ciphertext.',
-   'options':{}
+   'options':{
+      'number_of_answers': '3'
+   }
 }
