@@ -692,8 +692,6 @@ def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True
    decryption_complete = False
    
    if verbose:
-      if hollywood:
-         from random import choice as random_pick
       num_blocks = len(ciphertext_to_decrypt)/block_size
       num_current_block = 0
    #
@@ -713,15 +711,17 @@ def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True
          correct_byte_block = try_forever_egghunt_encryption_oracle(encryption_oracle,block_size,padding+egg+working_block)[offset:offset+block_size]
          working_block += decrypted_bytes
          # Try each byte until we match the block indicating the correct byte
-         for char in map(chr,xrange(256)):
+         # TODO: allow for other charsets
+         charset = frequency.optimized_charset['english']
+         for char in charset:
             if verbose and hollywood: 
                # Silly hollywood style visualization of decryption process
-               sys.stdout.write("\r" + output_mask(decrypted_bytes,string.letters+string.digits) + random_pick(string.letters)*(block_size-current_byte))
+               sys.stdout.write("\r" + output_mask(decrypted_bytes,string.printable[:-5]) + output_mask(char*(block_size-current_byte),string.printable[:-5]))
                sys.stdout.flush()
             if try_forever_egghunt_encryption_oracle(encryption_oracle,block_size,padding+egg+working_block+char)[:block_size] == correct_byte_block:
                decrypted_bytes += char
                break
-            if char == "\xff":
+            if char == charset[-1]:
                # We seem to have reached the padding now
                decryption_complete = True
       # set our working block to be the block we've just decrypted so we can
@@ -730,8 +730,6 @@ def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True
       plaintext += decrypted_bytes
       if verbose:
          print "\n[+] Decrypted block: %s" % decrypted_bytes
-      if decryption_complete:
-         break
    return plaintext
 
 # TODO: recover earlier states from mersenne twister output
@@ -776,6 +774,8 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
       from random import choice as random_pick
    plaintext = intermediate_block = ''
    ciphertext_blocks = split_into_blocks(ciphertext,block_size)
+   # TODO: allow alternate frequency charts
+   optimized_charset = frequency.optimized_charset['english']
    #--------------
    # Check our parameters to make sure everything has been put in correctly
    #
@@ -787,7 +787,7 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
       return False
    if iv != None:
       if len(iv) != block_size:
-         print '[!] Error: Bad iv length for padding_oracle_decrypt()'
+         print '[!] Error: Bad IV length for padding_oracle_decrypt()'
          return False
       # we set the previous block as the IV so that the first block decrypts correctly
       prev_block = iv
@@ -818,14 +818,16 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
       intermediate_block = ''
       # iterate through each byte of each block, and simultaneously, pkcs7 padding bytes
       for current_padding_byte in xrange(1,block_size+1):
+         original_byte = prev_block[-current_padding_byte]
          if current_padding_byte != 1:
             temp_ciphertext[flip_index-(current_padding_byte-1):flip_index] = sxor(intermediate_block,chr(current_padding_byte) * (current_padding_byte-1))
-         for test_number in xrange(256):
+         for char in optimized_charset:
             if verbose and hollywood:
                # Silly hollywood style visualization of decryption process
                sys.stdout.write("\r" + random_pick(string.letters)*(block_size-current_padding_byte) + output_mask(sxor(intermediate_block,prev_block[-(current_padding_byte-1):]),string.letters+string.digits))
                sys.stdout.flush()
-            temp_ciphertext[flip_index-current_padding_byte] = chr(test_number)
+            new_byte = chr((ord(char) ^ current_padding_byte) ^ ord(original_byte))
+            temp_ciphertext[flip_index-current_padding_byte] = new_byte
             if padding_oracle(''.join(temp_ciphertext)) == True:
                # Either we have a padding of "\x01" or some other valid padding.
                # If we're flipping the last byte, flip the second to last byte just to be sure.
@@ -833,12 +835,12 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
                   temp_ciphertext[flip_index-2] = sxor(temp_ciphertext[flip_index-2],"\x01")
                   if padding_oracle(''.join(temp_ciphertext)) == True:
                      # Current last decrypted byte is 0x01
-                     intermediate_byte = chr(0x01 ^ test_number)
+                     intermediate_byte = chr(0x01 ^ ord(new_byte))
                      break
                else:
-                  intermediate_byte = chr(current_padding_byte ^ test_number)
+                  intermediate_byte = chr(current_padding_byte ^ ord(new_byte))
                   break
-            if test_number == 255:
+            if char == optimized_charset[-1]:
                # Right now if we fail to decrypt a byte we bail out.
                # TODO: Do something better? Is there something better?
                print "\r[!] Could not decrypt a byte. Bailing out."
