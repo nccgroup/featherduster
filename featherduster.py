@@ -114,7 +114,7 @@ class AnalyzeCommand(Command):
       print '[+] Suggested modules:'
       for attack in feathermodules.module_list.keys():
          if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
-            print "%s - %s" % (attack, feathermodules.module_list[attack]['description'])
+            print '   {0:<20} - {1:<57}'.format(attack, feathermodules.module_list[attack]['description'])
    
 analyze = AnalyzeCommand('analyze', help='Analyze/decode samples', dynamic_args=True)
 
@@ -159,10 +159,10 @@ search = SearchCommand('search', help='Search module names and descriptions by k
 # samples
 class SamplesCommand(Command):
    def run(self, line):
-      print '-' * 40
+      print '-' * 60
       for sample in feathermodules.samples:
          print repr(sample)
-      print '-' * 40
+      print '-' * 60
 
 samples = SamplesCommand('samples', help='Show samples')
 
@@ -198,16 +198,16 @@ class OptionsCommand(Command):
          return False
       else:
          print ''
-         print 'Currently selected module: %s' % feathermodules.selected_attack_name
-         print '-' * 40
+         print '{0:^60}'.format('Currently selected module: ' + feathermodules.selected_attack_name)
+         print '-' * 60
          if len(feathermodules.selected_attack['options'].items()) == 0:
             print 'No options to configure.'
          else:
             for option, default in feathermodules.selected_attack['options'].items():
                try:
-                  print "%s\t%s" % (option, feathermodules.current_options[option])
+                  print '{0:<20}{1:>40}'.format(option, feathermodules.current_options[option])
                except:
-                  print "%s\t%s" % (option, default)
+                  print '{0:<20}{1:>40}'.format(option, default)
 
 
 # set
