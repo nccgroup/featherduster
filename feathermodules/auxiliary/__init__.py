@@ -1,1 +1,1 @@
-__all__ = ['rand_time', 'hash_format_detect']
+__all__ = ['rand_time', 'hash_format_detect', 'base_n_solver']
