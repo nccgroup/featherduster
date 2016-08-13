@@ -643,7 +643,7 @@ def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True
    (int) blocksize - The block size of the cipher in use (usually 8 or 16)
    (bool) verbose - Provide verbose output
    (bool) hollywood - Silly hollywood-style visualization
-   (string) charset - The charset to try in decryption.
+   (string) charset - A string of characters that could possibly be in the decrypted data, where the first character is the most common and the last is the least common. This should include at the very least all the possible padding characters. For instance, with PKCS#7 style padding, \\x01 through \\x10 should be included in the character set.
    '''
    #------------------------------
    # Helper functions for ECB CPA bytewise decryption
@@ -752,7 +752,7 @@ def mersenne_untwister(mersenne_state):
 TODO: Extend the attack to other forms of padding that
 can be used with Vaudenay's technique
 '''
-def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type='pkcs7', iv=None, prefix='',verbose=False, hollywood=True):
+def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type='pkcs7', iv=None, prefix='',verbose=False, hollywood=True, charset=frequency.optimized_charset['english']):
    '''
    Given a padding oracle function that accepts raw ciphertext and returns
    True for good padding or False for bad padding, and a ciphertext to decrypt:
@@ -768,13 +768,10 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
    (string) prefix - Ciphertext to place before any ciphertext being sent to the oracle.
    (bool) verbose - Provide direct output and progress indicator
    (bool) hollywood - Do hollywood style progress indication. Requires verbose.
+   (string) charset - A string of characters that could possibly be in the decrypted data, where the first character is the most common and the last is the least common. This should include at the very least all the possible padding characters. For instance, with PKCS#7 style padding, \\x01 through \\x10 should be included in the character set.
    '''
-   if verbose and hollywood:
-      from random import choice as random_pick
    plaintext = intermediate_block = ''
    ciphertext_blocks = split_into_blocks(ciphertext,block_size)
-   # TODO: allow alternate frequency charts
-   optimized_charset = frequency.optimized_charset['english']
    #--------------
    # Check our parameters to make sure everything has been put in correctly
    #
@@ -820,10 +817,10 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
          original_byte = prev_block[-current_padding_byte]
          if current_padding_byte != 1:
             temp_ciphertext[flip_index-(current_padding_byte-1):flip_index] = sxor(intermediate_block,chr(current_padding_byte) * (current_padding_byte-1))
-         for char in optimized_charset:
+         for char in charset:
             if verbose and hollywood:
                # Silly hollywood style visualization of decryption process
-               sys.stdout.write("\r" + random_pick(string.letters)*(block_size-current_padding_byte) + output_mask(sxor(intermediate_block,prev_block[-(current_padding_byte-1):]),string.letters+string.digits))
+               sys.stdout.write("\r" + char *(block_size-current_padding_byte) + output_mask(sxor(intermediate_block,prev_block[-(current_padding_byte-1):]),string.letters+string.digits))
                sys.stdout.flush()
             new_byte = chr((ord(char) ^ current_padding_byte) ^ ord(original_byte))
             temp_ciphertext[flip_index-current_padding_byte] = new_byte
@@ -839,7 +836,7 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
                else:
                   intermediate_byte = chr(current_padding_byte ^ ord(new_byte))
                   break
-            if char == optimized_charset[-1]:
+            if char == charset[-1]:
                # Right now if we fail to decrypt a byte we bail out.
                # TODO: Do something better? Is there something better?
                print "\r[!] Could not decrypt a byte. Bailing out."
