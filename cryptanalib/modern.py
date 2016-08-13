@@ -633,7 +633,7 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
    return results
 
 
-def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True):
+def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True, charset=frequency.optimized_charset['english']):
    '''
    Bytewise ECB decryption.
    
@@ -643,6 +643,7 @@ def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True
    (int) blocksize - The block size of the cipher in use (usually 8 or 16)
    (bool) verbose - Provide verbose output
    (bool) hollywood - Silly hollywood-style visualization
+   (string) charset - The charset to try in decryption.
    '''
    #------------------------------
    # Helper functions for ECB CPA bytewise decryption
@@ -711,8 +712,6 @@ def ecb_cpa_decrypt(encryption_oracle, block_size, verbose=False, hollywood=True
          correct_byte_block = try_forever_egghunt_encryption_oracle(encryption_oracle,block_size,padding+egg+working_block)[offset:offset+block_size]
          working_block += decrypted_bytes
          # Try each byte until we match the block indicating the correct byte
-         # TODO: allow for other charsets
-         charset = frequency.optimized_charset['english']
          for char in charset:
             if verbose and hollywood: 
                # Silly hollywood style visualization of decryption process
