@@ -445,6 +445,7 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
    verbose - (bool) Display messages regarding analysis results
    do_more_checks - (bool) Check for classical ciphers
    '''
+   data = filter(lambda x: x is not None and x is not '', data)
    results = {}
    result_properties = ['ecb', 'cbc_fixed_iv', 'blocksize', 'md_hashes',
    'sha1_hashes', 'sha2_hashes', 'individually_random', 'collectively_random', 'is_openssl_formatted', 'decoded_ciphertexts', 'key_reuse', 'rsa_key', 'rsa_private_key', 'rsa_small_n']
