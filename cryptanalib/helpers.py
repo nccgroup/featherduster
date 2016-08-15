@@ -169,18 +169,22 @@ def check_key_reuse(samples):
    '''
    Check for key reuse between two or more messages
    
-   Returns a boolean indicating whether two messages have high or low bitwise
-   correspondence, which suggests key reuse.
+   Returns a boolean indicating whether two messages have high or low
+   bitwise correspondence, which suggests key reuse.
    
    samples - (list) Two or more samples for evaluation
    '''
    if len(samples) == 1:
       print 'Need more than one sample'
       return None
-   total_hamming_distance = 0
-   for sample in samples:
-      total_hamming_distance += hamming_distance(samples[0],sample)
-   mean_hamming_distance = total_hamming_distance / float(len(samples))
+   total_length = total_hamming_distance = 0
+   for sample in samples[1:]:
+      compare_length = min(len(samples[0]),len(sample))
+      sample_hamming_distance = hamming_distance(samples[0],sample)
+      total_hamming_distance += sample_hamming_distance
+      total_length += compare_length
+   mean_hamming_distance = total_hamming_distance / float(total_length)
+   print mean_hamming_distance
    return ((mean_hamming_distance < 3.25) or (mean_hamming_distance > 4.75))
 
 
