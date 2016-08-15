@@ -21,9 +21,11 @@ If you want to write a FeatherModule, the format is relatively simple. A Feather
 
 An example module can be found under `examples/example_feathermodule.py`.
 
+## Custom non-trunk modules
+
 Custom modules can be placed in the `feathermodules/custom` section, where they will be automatically recognized and loaded at runtime. As such, modules that do not meet the contribution requirements listed below can be developed and released as third-party modules and can be used independently of their acceptance into or rejection from the FeatherDuster trunk.
 
-Analysis results keywords:
+## Analysis results keywords
 
 * `ecb` - Use of ECB mode
 * `cbc_fixed_iv` - Use of CBC mode with a fixed key/IV
@@ -38,6 +40,26 @@ Analysis results keywords:
 * `rsa_n_reuse` - Two or more RSA keys were found to have the same modulus
 * `rsa_private_key` - An RSA private key was found in the samples
 * `rsa_small_n` - An RSA key with a small modulus was found in the samples
+
+# Code structure
+
+* Cryptanalysis library is in `cryptanalib/`
+  * Primitives like GCD and CRT in `cryptanalib/helpers.py`
+  * Classical/silly crypto solvers in `cryptanalib/classical.py`
+  * Modern crypto solvers in `cryptanalib/modern.py`
+  * Frequency distribution data is in `cryptanalib/frequency.py`
+* FeatherDuster UI is at `featherduster.py`
+* FeatherModules are at `feathermodules/`
+  * Classical cipher modules at `feathermodules/classical/`
+  * Block cipher modules at `feathermodules/block/`
+  * Stream cipher modules at `feathermodules/stream/`
+  * Hash function modules at `feathermodules/hash/`
+  * Asymmetric cipher modules at `feathermodules/pubkey/`
+  * Auxiliary modules at `feathermodules/auxiliary/`
+  * Custom drop-in directort at `feathermodules/custom/` (don't put things here please)
+* Example challenges / scripts / modules at `examples`
+* Unit tests at `tests`
+* Utilities at `util`
 
 # Contribution requirements
 There are a few rules for contributing:
