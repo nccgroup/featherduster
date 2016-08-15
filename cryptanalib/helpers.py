@@ -184,7 +184,6 @@ def check_key_reuse(samples):
       total_hamming_distance += sample_hamming_distance
       total_length += compare_length
    mean_hamming_distance = total_hamming_distance / float(total_length)
-   print mean_hamming_distance
    return ((mean_hamming_distance < 3.25) or (mean_hamming_distance > 4.75))
 
 
