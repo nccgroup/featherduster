@@ -53,24 +53,20 @@ bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=False
 
 The analysis engine in Cryptanalib, used by FeatherDuster, can automatically detect encodings and decode samples. The engine assumes that all samples are generated with the same process (for instance, `base64encode(aes_encrypt(datum))`), but can handle mixed samples to some degree. Currently, Cryptanalib can detect and decode the following encoding schemes:
 
-~~~
-Vanilla Base64
-ASCII hex-encoding
-Zlib compression
-~~~
+* Vanilla Base64
+* ASCII hex-encoding
+* Zlib compression
 
 Cryptanalib's analysis engine can detect a number of properties in the analysis phase, too:
 
-~~~
-Low entropy ciphertext (Useful for detecting homebrew ciphers)
-Block cipher usage vs Stream cipher usage
-ECB mode
-CBC mode with fixed IV
-Hash algorithm (engine will note that length extension attacks may apply with Merkle-Daamgard based hash algos)
-OpenSSL formatted ciphertext
-Stream cipher key reuse
-RSA keys with private components
-Insufficiently large RSA moduli
-RSA modulus reuse
-Transposition-only cipher
-~~~
+* Low entropy ciphertext (Useful for detecting homebrew ciphers)
+* Block cipher usage vs Stream cipher usage
+* ECB mode
+* CBC mode with fixed IV
+* Hash algorithm (engine will note that length extension attacks may apply with Merkle-Daamgard based hash algos)
+* OpenSSL formatted ciphertext
+* Stream cipher key reuse
+* RSA keys with private components
+* Insufficiently large RSA moduli
+* RSA modulus reuse
+* Transposition-only cipher
