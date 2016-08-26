@@ -11,7 +11,7 @@ def break_alpha_shift(ciphertexts):
 feathermodules.module_list['alpha_shift'] = {
    'attack_function':break_alpha_shift,
    'type':'classical',
-   'keywords':['alpha'],
+   'keywords':['alpha', 'classical', 'individually_low_entropy'],
    'description':'A brute force attack against an alphabetic shift cipher.',
    'options': {}
 }

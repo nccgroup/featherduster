@@ -169,18 +169,21 @@ def check_key_reuse(samples):
    '''
    Check for key reuse between two or more messages
    
-   Returns a boolean indicating whether two messages have high or low bitwise
-   correspondence, which suggests key reuse.
+   Returns a boolean indicating whether two messages have high or low
+   bitwise correspondence, which suggests key reuse.
    
    samples - (list) Two or more samples for evaluation
    '''
    if len(samples) == 1:
       print 'Need more than one sample'
       return None
-   total_hamming_distance = 0
-   for sample in samples:
-      total_hamming_distance += hamming_distance(samples[0],sample)
-   mean_hamming_distance = total_hamming_distance / float(len(samples))
+   total_length = total_hamming_distance = 0
+   for sample in samples[1:]:
+      compare_length = min(len(samples[0]),len(sample))
+      sample_hamming_distance = hamming_distance(samples[0],sample)
+      total_hamming_distance += sample_hamming_distance
+      total_length += compare_length
+   mean_hamming_distance = total_hamming_distance / float(total_length)
    return ((mean_hamming_distance < 3.25) or (mean_hamming_distance > 4.75))
 
 
@@ -425,7 +428,23 @@ def generate_frequency_table(text,charset):
          freq_table[key] = 0 
    return freq_table
 
+def generate_optimized_charset(text):
+   '''
+   Given a sample text, generate a frequency table and
+   convert it to a string of characters sorted by frequency
+   of appearance in the text. This can be used directly in
+   some of the other cryptanalib functions, such as our
+   Vaudenay padding oracle decryption function.
 
+   (string) text - The corpus of text from which to learn
+      frequency data.
+   '''
+
+   all_chars = map(chr, range(256))
+   freq_table = generate_frequency_table(text, charset=all_chars)
+   charset = sorted(freq_table, key=lambda x: freq_table[x], reverse=True)
+   return ''.join(charset)
+   
 def hamming_distance(string1, string2):
    '''
    Calculate and return bitwise hamming distance between two strings
