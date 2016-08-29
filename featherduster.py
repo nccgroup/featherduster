@@ -43,7 +43,7 @@ class ImportSingleFileCommand(Command):
       # TODO: open a subconsole or just use readline to get filename w tab complete
       sample_file = raw_input('Please enter the filename you want to open: ')
       try:
-         sample_fh = open(line.split()[-1],'r')
+         sample_fh = open(sample_file,'r')
          feathermodules.samples.append(sample_fh.read())
          sample_fh.close()
       except:
