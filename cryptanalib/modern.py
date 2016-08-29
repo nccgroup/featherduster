@@ -488,7 +488,7 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
       if verbose:
          print '[+] Messages appear to be zlib compressed, decompressing and analyzing again.'
       return analyze_ciphertext(map(lambda x: zlib.decompress(x),data), verbose=verbose)
-   if all([data_properties[datum]['base64_encoded'] for datum in data_properties]):
+   if all([data_properties[datum]['base64_encoded'] and not data_properties[datum]['is_all_alpha'] for datum in data_properties]):
       if verbose:
          print '[+] Messages appear to be Base64 encoded, Base64 decoding and analyzing again.'
       return analyze_ciphertext(map(lambda x: x.decode('base64'),data), verbose=verbose)
