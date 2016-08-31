@@ -11,6 +11,7 @@ def break_vigenere(ciphertexts):
                                   num_answers=int(options['num_answers']),
                                   max_best_shifts=int(options['num_best_shifts']),
                                   num_key_lengths=int(options['num_key_lengths']),
+                                  num_key_guesses=int(options['num_key_guesses']),
                                   coefficient_single_letter=float(options['coefficient_single_letter']),
                                   coefficient_multigraph=float(options['coefficient_multigraph']),
                                   coefficient_word_count=float(options['coefficient_word_count']))
@@ -28,6 +29,7 @@ feathermodules.module_list['vigenere'] = {
       'key_length_scan_range':'11',
       'num_key_lengths':'3',
       'num_best_shifts':'2',
+      'num_key_guesses':'100',
       'coefficient_single_letter':'0.0',
       'coefficient_multigraph':'0.0',
       'coefficient_word_count':'1.0',

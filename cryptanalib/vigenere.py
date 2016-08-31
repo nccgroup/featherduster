@@ -5,7 +5,6 @@ import frequency
 
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 english_letter_frequency = [0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406, 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074]
-file_debug = False
 
 def to_char(number):
     return chr(number + ord('A'))
@@ -67,11 +66,6 @@ def evaluate_vigenere_key_length(ciphertext, max_length):
     ioc_list = []
     for length in xrange(1, min(max_length+1, len(ciphertext))):
         ioc_list.append(ind_of_coinc(ciphertext, length))
-    
-    if file_debug:
-        f = open('length_analysis.txt', 'w')
-        f.write(" ".join(str(i) for i in ioc_list))
-        f.close()
 
     # Check if we possibly caught a multiple of the actual key length:
     # subtract median from every index of coincidence and square
@@ -143,20 +137,6 @@ def break_shift(ciphertext, ref_letter_freq, correlation = False):
                 # export only the list up to this value.
                 shifts_trunc = shifts[:k+1]
                 break
-
-        #if shifts[0][1] < chi_square_quantile:
-        #    # if there are several guesses with a reasonable chi square test value:
-        #    # accept them until a quantil of 99.0% and strip the chi square score off
-        #    shifts_filtered = zip(*filter(lambda tup: tup[1] < chi_square_quantile, shifts))[0]
-        #else:
-        #    # if they're all pretty poor, just return the best possible shift
-        #    shifts_filtered = [shifts[0][0]]
-
-    if file_debug:
-        f = open('freq_analysis.txt', 'w')
-        f.write(" ".join(str(i) for i in ref_letter_freq) + "\n")
-        f.write(" ".join(str(i) for i in cross_correlation) + "\r\n")
-        f.close()
     
     return zip(*shifts_trunc)[0]
 
@@ -249,7 +229,9 @@ def count_up(ll_indices, list_of_lists):
 
 def break_vigenere(ciphertext, scan_range, num_answers=1, max_best_shifts=2,
                    num_key_lengths=1, ref_letter_freq=english_letter_frequency,
-                   coefficient_single_letter=0, coefficient_multigraph=0, coefficient_word_count=1):
+                   num_key_guesses=100,coefficient_single_letter=0, coefficient_multigraph=0,
+                   coefficient_word_count=1):
+
     # First strip cipher from non-alphabetical characters, convert to upper
     ciphertext = filter(lambda x: x.isalpha(), ciphertext).upper()
 
@@ -311,7 +293,7 @@ def break_vigenere(ciphertext, scan_range, num_answers=1, max_best_shifts=2,
     # Now do a more advanced analysis on plaintext detection, this time additionally with
     # multigraph frequency analysis and common word count -> this is very slow but more accurate
     keys2 = []
-    for (current_key,score) in keys_sorted_by_single_letter_score[:100]:
+    for (current_key,score) in keys_sorted_by_single_letter_score[:num_key_guesses]:
         plaintext = translate_vigenere(ciphertext, current_key, decrypt=True)
         keys2.append((current_key, detect_plaintext(plaintext.lower(),
                      detect_single_letters=True, detect_multigraphs=True, detect_words=True)))
