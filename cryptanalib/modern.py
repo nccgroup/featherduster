@@ -424,7 +424,7 @@ def cbc_edit(old_plaintext,new_plaintext,old_ciphertext):
 
 
 
-def analyze_ciphertext(data, verbose=False, do_more_checks=False):
+def analyze_ciphertext(data, verbose=False):
    '''
    Takes in a list of samples and analyzes them to determine what type
    of samples they may be.
@@ -443,14 +443,12 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
    
    data - A list of samples to analyze
    verbose - (bool) Display messages regarding analysis results
-   do_more_checks - (bool) Check for classical ciphers
    '''
    data = filter(lambda x: x is not None and x is not '', data)
    results = {}
    result_properties = ['ecb', 'cbc_fixed_iv', 'blocksize', 'md_hashes',
    'sha1_hashes', 'sha2_hashes', 'individually_random', 'collectively_random', 'is_openssl_formatted', 'decoded_ciphertexts', 'key_reuse', 'rsa_key', 'rsa_private_key', 'rsa_small_n']
-   if do_more_checks:
-      result_properties.extend(['is_transposition_only', 'is_polybius', 'is_all_alpha'])
+   result_properties.extend(['is_transposition_only', 'is_polybius', 'is_all_alpha'])
    for result_item in result_properties:
       results[result_item]=False
    results['keywords'] = []
@@ -471,11 +469,10 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
        data_properties[index]['rsa_private_key'],
        data_properties[index]['rsa_n_length']) = check_rsa_key(datum)
 
-      if do_more_checks:
-         # check for silly/classical crypto here
-         data_properties[index]['is_transposition_only'] = (detect_plaintext(datum.lower(),frequency.frequency_tables['single_english_icase_letters']) < 1)
-         data_properties[index]['is_polybius'] = detect_polybius(datum)
-         data_properties[index]['is_all_alpha'] = all([char in ' '+string.lowercase for char in datum.lower()])
+      # check for silly/classical crypto here
+      data_properties[index]['is_transposition_only'] = (detect_plaintext(datum.lower(),frequency.frequency_tables['single_english_icase_letters']) < 1)
+      data_properties[index]['is_polybius'] = detect_polybius(datum)
+      data_properties[index]['is_all_alpha'] = all([char in ' '+string.lowercase for char in datum.lower()])
    if all([data_properties[datum]['is_openssl_formatted'] for datum in data_properties]):
       if verbose:
          print '[+] Messages appear to be in OpenSSL format. Stripping OpenSSL header and analyzing again.'
@@ -611,25 +608,24 @@ def analyze_ciphertext(data, verbose=False, do_more_checks=False):
             print '[!] Consider running single-byte or multi-byte XOR solvers.'
 
    # checks for silly classical crypto
-   if do_more_checks:
-      if all([data_properties[datum]['is_transposition_only'] for datum in data_properties]) and not 'rsa_key' in results['keywords']:
-         results['is_transposition_only'] = True
-         results['keywords'].append('transposition')
-         if verbose:
-            print '[!] Ciphertexts match the frequency distribution of a transposition-only ciphertext.'
-            print '[!] Consider using transposition solvers (rail fence, columnar transposition, etc)'
-      if all([data_properties[datum]['is_polybius'] for datum in data_properties]):
-         results['is_polybius'] = True
-         results['keywords'].append('polybius')
-         if verbose:
-            print '[!] Ciphertexts appear to be a grid cipher (like polybius).'
-            print '[!] Consider running simple substitution solvers.'
-      if all([data_properties[datum]['is_all_alpha'] for datum in data_properties]):
-         results['is_all_alpha'] = True
-         results['keywords'].append('alpha')
-         if verbose:
-            print '[!] Ciphertexts are all alphabet characters.'
-            print '[!] Consider running an alphabetical shift solver.'
+   if all([data_properties[datum]['is_transposition_only'] for datum in data_properties]) and not 'rsa_key' in results['keywords']:
+      results['is_transposition_only'] = True
+      results['keywords'].append('transposition')
+      if verbose:
+         print '[!] Ciphertexts match the frequency distribution of a transposition-only ciphertext.'
+         print '[!] Consider using transposition solvers (rail fence, columnar transposition, etc)'
+   if all([data_properties[datum]['is_polybius'] for datum in data_properties]):
+      results['is_polybius'] = True
+      results['keywords'].append('polybius')
+      if verbose:
+         print '[!] Ciphertexts appear to be a grid cipher (like polybius).'
+         print '[!] Consider running simple substitution solvers.'
+   if all([data_properties[datum]['is_all_alpha'] for datum in data_properties]):
+      results['is_all_alpha'] = True
+      results['keywords'].append('alpha')
+      if verbose:
+         print '[!] Ciphertexts are all alphabet characters.'
+         print '[!] Consider running an alphabetical shift solver.'
    results['decoded_ciphertexts'] = data
    return results
 

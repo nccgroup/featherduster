@@ -107,7 +107,7 @@ class AnalyzeCommand(Command):
          print 'No loaded samples. Please use the \'import\' command.'
          return False
       print '[+] Analyzing samples...'
-      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True, do_more_checks=True)
+      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True)
       if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
          feathermodules.samples = analysis_results['decoded_ciphertexts']
       print ''
@@ -126,7 +126,7 @@ class AutopwnCommand(Command):
          print 'No loaded samples. Please use the \'import\' command.'
          return False
       print '[+] Analyzing samples...'
-      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True, do_more_checks=True)
+      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True)
       if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
          feathermodules.samples = analysis_results['decoded_ciphertexts']
       for attack in feathermodules.module_list.keys():
