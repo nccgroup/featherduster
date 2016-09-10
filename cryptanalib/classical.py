@@ -152,12 +152,12 @@ def break_ascii_shift(ciphertext):
 def break_rail_fence(ciphertext):
    print 'todo'
 
-def break_columnar_transposition(ciphertext, pt_freq_table=frequency.frequency_tables['english'], num_answers=1, single_chars_only=False):
+def break_columnar_transposition(ciphertext, pt_freq_table=frequency.frequency_tables['single_english'], num_answers=1):
    '''Uses brute force and plaintext detection to break columnar transposition'''
    results = {}
    ciphertext_len = len(ciphertext)
    for num_cols in range(2,ciphertext_len/2):
       result = ''.join([ciphertext[num::num_cols] for num in xrange(num_cols)])
-      results[result] = detect_plaintext(result, pt_freq_table=pt_freq_table, detect_words=True, single_chars_only=single_chars_only)
+      results[result] = detect_plaintext(result, pt_freq_table=pt_freq_table, detect_words=True)
    return sorted(results.items(),key=operator.itemgetter(1))[:num_answers]
 

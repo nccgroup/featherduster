@@ -358,7 +358,7 @@ def detect_block_cipher(ciphertext):
 
 
 
-def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['english_letters'], single_chars_only=False, detect_words=True, common_words=frequency.common_words['english']):
+def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['english_letters'], detect_words=True, common_words=frequency.common_words['english']):
    '''
    Return score for likelihood that string is plaintext
    in specified language as a measure of deviation from
@@ -367,12 +367,10 @@ def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['e
    candidate_text - (string) The sample to check for plaintext-like properties
 
    pt_freq_table - Expected frequency distribution for the plaintext, as generated
-      by generate_frequency_table().
-
-   single_chars_only - (bool) Check only the frequency of single characters, not
-      bigrams, trigrams, etc. Useful when transposition is involved in the cipher
-      or when the ciphertext must be transposed to aid in analysis, as is the case
-      with attacking stream cipher key reuse. Implies detect_words=False.
+      by generate_frequency_table(). If only individual character frequency should
+      be matched, ensure you're using a frequency table with only single character
+      frequencies. If you're using the built-in tables, these are prefixed with
+      'single_'.
 
    detect_words - (bool) Use a list of strings expected in the correct plaintext,
       aka 'cribs'.
@@ -383,11 +381,8 @@ def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['e
    common_words - (list of strings) Words that are likely to appear in the plaintext.
       Requires detect_words=True.
    '''
-   if single_chars_only:
-      pt_freq_table_keys = filter(lambda x: len(x)==1,pt_freq_table.keys())
-      detect_words = False
-   else:
-      pt_freq_table_keys = pt_freq_table.keys()
+   pt_freq_table_keys = pt_freq_table.keys()
+
    candidate_dict = generate_frequency_table(candidate_text, pt_freq_table_keys)
    # generate score as deviation from expected character frequency
    score = 0
