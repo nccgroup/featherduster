@@ -56,7 +56,7 @@ Custom modules can be placed in the `feathermodules/custom` section, where they 
   * Hash function modules at `feathermodules/hash/`
   * Asymmetric cipher modules at `feathermodules/pubkey/`
   * Auxiliary modules at `feathermodules/auxiliary/`
-  * Custom drop-in directort at `feathermodules/custom/` (don't put things here please)
+  * Custom drop-in directory at `feathermodules/custom/` (don't put things here please)
 * Example challenges / scripts / modules at `examples`
 * Unit tests at `tests`
 * Utilities at `util`
@@ -68,6 +68,6 @@ There are a few rules for contributing:
 * The license on the code must be compatible with the BSD license used by FeatherDuster/Cryptanalib.
 * No additional dependencies may be introduced.
 * Code must be OS-independent.
-* ...and of course, code must be functional!
+* Code must pass unit tests. Execute `python -c 'from tests import *'` in the `featherduster` directory to execute all unit tests.
 
 
