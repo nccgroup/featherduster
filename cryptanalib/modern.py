@@ -923,6 +923,7 @@ def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_tabl
       by generate_frequency_table()
    verbose - (bool) Show progress in the attack
    '''
+   pt_freq_table_single_chars = dict(filter(lambda x: len(x[0])==1, pt_freq_table.items()))
    edit_distances = {}
    ciphertext_len = len(ciphertext)
    for keysize in xrange(2,max_keysize+1):
@@ -953,11 +954,11 @@ def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_tabl
             sys.stdout.write("\rProcessing chunk %d of %d" % (current_chunk, chunks_to_process))
             sys.stdout.flush()
             current_chunk += 1
-         best_key += chr(break_single_byte_xor(ct_chunk,1,pt_freq_table=frequency.frequency_tables['single_english'])[0][1][1])
+         best_key += chr(break_single_byte_xor(ct_chunk,1,pt_freq_table=pt_freq_table_single_chars, detect_words=False)[0][1][1])
       answers[best_key] = sxor(ciphertext,best_key*((len(ciphertext)/best_keysize)+1))
       if verbose:
          print ''
-   return sorted(answers.values(),key=detect_plaintext)[:num_answers]
+   return sorted(answers.values(),key=lambda x: detect_plaintext(x, pt_freq_table=pt_freq_table))[:num_answers]
 
 
 
@@ -1024,7 +1025,7 @@ def break_many_time_pad(ciphertexts, pt_freq_table=frequency.frequency_tables['s
          sys.stdout.flush()
       # Remove padding for single byte XOR solve
       joined_zipped_ciphertext = ''.join([x for x in zipped_ciphertext if x is not None])
-      result = break_single_byte_xor(joined_zipped_ciphertext, pt_freq_table=pt_freq_table, num_answers=1, )[0][0]
+      result = break_single_byte_xor(joined_zipped_ciphertext, pt_freq_table=pt_freq_table, detect_words=False, num_answers=1, )[0][0]
       result_tmp = list(result)
       result = []
       # Add it back for rearranging
