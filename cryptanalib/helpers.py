@@ -541,18 +541,27 @@ def sxor(string1, string2):
    '''
    return ''.join(chr(ord(chr1)^ord(chr2)) for chr1, chr2 in zip(string1,string2))
 
-def count_words(candidate_text, common_words=frequency.common_words['english']):
+def count_words(candidate_text, common_words=frequency.common_words['english'], case_sensitive=True):
    '''
    Count the instances of common words in the expected plaintext
-   language, return the collective count
+   language, return the total number of characters matched in each
+   word 
 
-   candidate_text - A string to analyze
-   common_words - A list of strings expected to appear in the text
+   candidate_text - (string) Sample to analyze
+   common_words - (list) Sequences expected to appear in the text
+   case_sensitive - (bool) Whether or not to match case sensitively
    '''
-   count = 0
+   score = 0
+
    for word in common_words:
-      count += candidate_text.count(word.lower())
-   return count
+      if not case_sensitive:
+         word = word.lower()
+      num_found = candidate_text.count(word)
+      if num_found > 0:
+         score += num_found * len(word)
+      
+   return score
+
 
 def make_polybius_square(password,extended=False):
    '''
@@ -560,7 +569,7 @@ def make_polybius_square(password,extended=False):
    length, either 5x5 or 6x6 depending on whether extended
    Polybius mode is on. Assumes I/J are represented as one letter
 
-   password - The password to use when generating the polybius square
+   password - (string) The password to use when generating the polybius square
    extended - (bool) Set to True to use a 6x6 square instead of a 5x5
    '''
    alphabet = string.lowercase
