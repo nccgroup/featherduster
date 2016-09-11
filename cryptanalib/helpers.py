@@ -358,7 +358,7 @@ def detect_block_cipher(ciphertext):
 
 
 
-def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['english_letters'], detect_words=True, common_words=frequency.common_words['english']):
+def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['english_letters'], detect_words=True, common_words=frequency.common_words['english'], individual_scores=False):
    '''
    Return score for likelihood that string is plaintext
    in specified language as a measure of deviation from
@@ -380,21 +380,32 @@ def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['e
 
    common_words - (list of strings) Words that are likely to appear in the plaintext.
       Requires detect_words=True.
-   '''
-   pt_freq_table_keys = pt_freq_table.keys()
 
-   candidate_dict = generate_frequency_table(candidate_text, pt_freq_table_keys)
+   individual_scores - (bool) Whether or not to return a tuple with individual scores.
+   '''
+
    # generate score as deviation from expected character frequency
-   score = 0
+   pt_freq_table_keys = pt_freq_table.keys()
+   candidate_dict = generate_frequency_table(candidate_text, pt_freq_table_keys)
+   char_deviation_score = 0
+   for char in pt_freq_table_keys:
+      char_deviation_score += abs(candidate_dict[char]-pt_freq_table[char])
+
+   # generate score as total number of letters in common words found in sample
+   word_count_score = 0
    if detect_words:
-      num_words = count_words(candidate_text, common_words=common_words)
-      if num_words == 0:
+      word_count_score = count_words(candidate_text, common_words=common_words)
+   
+   if individual_scores:
+      return (char_deviation_score, word_count_score)
+   else:
+      if word_count_score == 0:
          score = 1
       else:
-         score = 1.0/num_words
-   for char in pt_freq_table_keys:
-      score += abs(candidate_dict[char]-pt_freq_table[char])
-   return score
+         score = 1.0/word_count_score
+      score += char_deviation_score
+      return score
+
 
 def generate_frequency_table(text,charset):
    '''
