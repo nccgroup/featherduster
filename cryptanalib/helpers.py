@@ -308,6 +308,8 @@ def extended_gcd(a, b):
    Euclid's GCD algorithm, but with the addition that the last x and y values are returned.
 
    a, b - Two integers to find common factors for
+
+   Returns (Last X value, Last Y value, Greatest common divisor)
    '''
    x,y = 0, 1
    lastx, lasty = 1, 0
