@@ -25,6 +25,20 @@ import zlib
 # with modern crypto, or at least cryptosystems likely to be found in the real world.
 #-----------------------------------------
 
+def rsa_crt_fault_attack(faulty_signature, message, modulus, e=0x10001):
+   '''
+   Given a faulty signature, a message (with padding, if any, applied),
+   the modulus, and public exponent, one can derive the private key used
+   to sign the message.
+   
+   faulty_signature - (long) A signature generated incorrectly
+   message - (long) The signed message, as a number, with padding applied
+   modulus - (long) The public modulus
+   e - (long) The public exponent
+   '''
+   return gmpy.gcd((gmpy.mpz(faulty_signature) ** e) - message, modulus)
+
+
 def recover_rsa_modulus_from_signatures(m1, s1, m2, s2, e=0x10001):
    """
    Calculates the modulus used to produce RSA signatures from
