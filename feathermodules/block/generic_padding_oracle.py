@@ -33,7 +33,7 @@ def padding_oracle(ciphertext):
    #   return False
 
 # To decrypt the first command line argument:
-print "The decrypted version of your input is: " + ca.padding_oracle_decrypt(padding_oracle=padding_oracle, ciphertext=sys.argv[1].decode('hex'), block_size=%r, padding_type=%r, iv=%r, verbose=True, hollywood=%r)
+print "The decrypted version of your input is: " + ca.padding_oracle_decrypt(padding_oracle=padding_oracle, ciphertext=sys.argv[1].decode('hex'), block_size=%r, padding_type=%r, iv=%r.decode('hex'), verbose=True, hollywood=%r)
 
 # To encrypt the first command line argument:
 # print "Your new ciphertext is: " + ca.cbcr(sys.argv[1].decode('hex'), oracle=padding_oracle, is_padding_oracle=True, block_size=%r, verbose=True)
