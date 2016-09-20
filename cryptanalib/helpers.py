@@ -303,6 +303,13 @@ def is_random(sample, verbose=False, boolean_results=True):
                print '[+] Only the longest-bit-run test has failed. This suggests that certain portions of the data are not encrypted.'
       return results
 
+def gcd(a,b):
+   '''
+   Wrapper around extended_gcd() that simply returns the GCD alone.
+   '''
+   return extended_gcd(a,b)[2]
+
+
 def extended_gcd(a, b): 
    '''
    Euclid's GCD algorithm, but with the addition that the last x and y values are returned.
