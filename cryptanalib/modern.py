@@ -25,7 +25,7 @@ import zlib
 # with modern crypto, or at least cryptosystems likely to be found in the real world.
 #-----------------------------------------
 
-def rsa_crt_fault_attack(faulty_signature, message, modulus, e=0x10001):
+def rsa_crt_fault_attack(faulty_signature, message, modulus, e=0x10001, verbose=False):
    '''
    Given a faulty signature, a message (with padding, if any, applied),
    the modulus, and public exponent, one can derive the private key used
@@ -34,9 +34,21 @@ def rsa_crt_fault_attack(faulty_signature, message, modulus, e=0x10001):
    faulty_signature - (long) A signature generated incorrectly
    message - (long) The signed message, as a number, with padding applied
    modulus - (long) The public modulus
-   e - (long) The public exponent
+   e - (long) The public exponent [defaults to the common 0x10001]
+
+   Returns the private exponent if found, or False.
    '''
-   return gmpy.gcd((gmpy.mpz(faulty_signature) ** e) - message, modulus)
+   p = gcd( pow(faulty_signature, e, modulus) - message, modulus )
+
+   if p == 1:
+      if verbose:
+         print '[*] Couldn\'t factor the private key.'
+      return False
+   else:
+      q = modulus / p
+      d = derive_d_from_pqe(p,q,e)
+      print '[!] Factored private key.'
+      return d
 
 
 def recover_rsa_modulus_from_signatures(m1, s1, m2, s2, e=0x10001):
@@ -1135,8 +1147,8 @@ def hastad_broadcast_attack(key_message_pairs, exponent):
 
    exponent should simply be an integer.
 
-   (This function and the functions on which this relies are based on work by
-   Christoph Egger <christoph@christoph-egger.org>
+   (This function is based on work by Christoph Egger
+   <christoph@christoph-egger.org>
    https://www.christoph-egger.org/weblog/entry/46)
    """
    x,n = chinese_remainder_theorem(key_message_pairs)
