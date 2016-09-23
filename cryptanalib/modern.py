@@ -843,7 +843,7 @@ def padding_oracle_decrypt(padding_oracle, ciphertext, block_size, padding_type=
          for char in charset:
             if verbose and hollywood:
                # Silly hollywood style visualization of decryption process
-               sys.stdout.write("\r" + char *(block_size-current_padding_byte) + output_mask(sxor(intermediate_block,prev_block[-(current_padding_byte-1):]),string.letters+string.digits))
+               sys.stdout.write("\r" + output_mask(char *(block_size-current_padding_byte) + sxor(intermediate_block,prev_block[-(current_padding_byte-1):]),string.letters+string.digits))
                sys.stdout.flush()
             new_byte = chr((ord(char) ^ current_padding_byte) ^ ord(original_byte))
             temp_ciphertext[flip_index-current_padding_byte] = new_byte
