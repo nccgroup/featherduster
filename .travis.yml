@@ -19,3 +19,4 @@ install:
 
 script:
   - python -c 'from tests import *'
+  - sh tests/*.sh
