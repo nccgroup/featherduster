@@ -1024,18 +1024,15 @@ def break_many_time_pad(ciphertexts, pt_freq_table=frequency.frequency_tables['s
       return False
       
    # Need to truncate the longest ciphertext to the length of the second longest
-   ciphertexts = sorted(ciphertexts, key=len)
-   longest_ciphertexts = ciphertexts[-2:]
-   longest_ct_len = len(longest_ciphertexts[1])
-   second_longest_ct_len = len(longest_ciphertexts[0])
-   # If the two longest ciphertexts aren't already the same length
-   length_delta = longest_ct_len - second_longest_ct_len
-   if length_delta != 0:
-      ciphertexts = ciphertexts[:-1] + [ciphertexts[-1][:-length_delta]]
+   longest_ct_len = max([len(x) for x in ciphertexts])
+   second_longest_ct_len = max([len(x) for x in filter(lambda x: len(x) <= longest_ct_len,ciphertexts)])
+   if longest_ct_len != second_longest_ct_len:
+      for i in range(len(ciphertexts)):
+         if len(ciphertexts[i]) > longest_ct_len:
+            ciphertexts[i] = ciphertexts[i][:second_longest_ct_len]
 
    # Pad the other ciphertexts out with None
-   pad_to_length = len(longest_ciphertexts[0])
-   ciphertexts = right_pad_with_none(ciphertexts, pad_to_length)
+   ciphertexts = right_pad_with_none(ciphertexts, second_longest_ct_len)
 
    zipped_plaintexts = []
    # Separate ciphertext bytes into groups positionally
