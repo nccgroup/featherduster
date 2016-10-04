@@ -916,7 +916,6 @@ def cbcr(new_plaintext, oracle, block_size, is_padding_oracle=False, verbose=Fal
       intermediate_block = decrypt(null_block + utility_block + padding_block)[block_size:block_size*2]
       utility_block = sxor(intermediate_block,plaintext_block)
       new_ciphertext = utility_block + new_ciphertext
-   new_ciphertext = null_block + new_ciphertext
    return new_ciphertext
 
 
