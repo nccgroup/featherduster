@@ -25,6 +25,79 @@ import zlib
 # with modern crypto, or at least cryptosystems likely to be found in the real world.
 #-----------------------------------------
 
+def lcg_next_states(known_states_in_order, num_states=5, a='unknown', c='unknown', m='unknown'):
+   '''
+   Given the current state of an LCG, return the next states
+   in sequence.
+   
+   Currently, the A, C, and M values must be known.
+   
+   known_states_in_order - (list of ints) Known states from the
+      LCG.
+   num_of_states - (int) The number of future states to generate.
+   a - (int) The multiplier for the LCG.
+   c - (int) The addend for the LCG.
+   m - (int) The modulus for the LCG.
+   '''
+   #TODO: allow a,c,m recovery for unknown values
+   if any([x=='unknown' for x in [a,c,m]]):
+      print 'a,c,m recovery not yet implemented.'
+      return False
+   
+   current_state = known_states_in_order[-1]
+   next_states = []
+   for i in xrange(num_states):
+      current_state = (a * current_state + c) % m
+      next_states.append(current_state)
+
+   return next_states
+
+
+def lcg_prev_states(known_states_in_order, num_states=5, a='unknown', c='unknown', m='unknown'):
+   '''
+   Given the current state of an LCG, return the previous states
+   in sequence.
+   
+   Currently, the A, C, and M values must be known.
+   
+   known_states_in_order - (list of ints) Known states from the
+      LCG.
+   num_of_states - (int) The number of past states to generate.
+   a - (int) The multiplier for the LCG.
+   c - (int) The addend for the LCG.
+   m - (int) The modulus for the LCG.
+   '''
+   #TODO: allow a,c,m recovery for unknown values
+   if any([x=='unknown' for x in [a,c,m]]):
+      print 'a,c,m recovery not yet implemented.'
+      return False
+
+   current_state = known_states_in_order[0]
+   prev_states = []
+   for i in xrange(num_states):
+      current_state = (a * gmpy.invert(current_state - c, m)) % m
+      prev_states.insert(0,current_state)
+
+   return prev_states
+
+
+def libc_rand_next_states(known_states_in_order, num_states):
+   '''
+   A wrapper around lcg_next_states with hardcoded
+   a, c, and m parameters.
+   '''
+   return lcg_next_states(known_states_in_order, num_of_states, a=1103515245, c=12345, m=2**31)
+
+def libc_rand_prev_states(known_states_in_order, num_states):
+   '''
+   A wrapper around lcg_prev_states with hardcoded
+   a, c, and m parameters corresponding to libc rand(),
+   used in C and Perl 
+   '''
+   return lcg_prev_states(known_states_in_order, num_of_states, a=1103515245, c=12345, m=2**31)
+
+
+
 def rsa_crt_fault_attack(faulty_signature, message, modulus, e=0x10001, verbose=False):
    '''
    Given a faulty signature, a message (with padding, if any, applied),
