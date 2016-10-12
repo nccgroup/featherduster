@@ -206,7 +206,7 @@ def do_simple_substitution(ciphertext, pt_charset, ct_charset):
    return string.translate(ciphertext, string.maketrans(ct_charset, pt_charset))
 
 
-# TODO: Implement chi square and best compression ratio
+# TODO: Implement chi square
 def is_random(sample, verbose=False, boolean_results=True):
    '''
    Run randomness tests to determine likelihood of data being
@@ -281,6 +281,12 @@ def is_random(sample, verbose=False, boolean_results=True):
       print '[+] Deviation for 100+ random bytes of data generally does not exceed 0.4.'
    if results['monte_carlo_failed'] and verbose:
       print '[!] Deviation exceeds 0.4. If no other randomness tests failed, this data may be compressed, not encrypted or random.'
+   # Compression ratio test
+   compression_ratio = len(zlib.compress(sample,9)) / float(len(sample))
+   if verbose:
+      print '[+] Zlib best compression ratio is {0:.0f}%'.format(compression_ratio * 100)
+      print '[+] Compression ratio for random data is unlikely to be lower than 95%.'
+   results['compression_ratio_failed'] = (compression_ratio <= .95)
    if boolean_results:
       if any(results.values()):
          if verbose:
