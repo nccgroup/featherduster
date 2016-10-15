@@ -478,13 +478,19 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
       M = step3(s, M, R)
       # Step 4: Computing the solution
       list_M = list(M)
+      interval_bit_length = (gmpy.mpz(list_M[0][1]) - gmpy.mpz(list_M[0][0])).bit_length()
       if verbose and (len(M) == 1):
-         sys.stdout.write("\rCurrent interval bit length: %d | Iterations finished: %d  " % (gmpy.mpz(list_M[0][1] - list_M[0][0]).bit_length(), i))
+         sys.stdout.write("\rCurrent interval bit length: %d | Iterations finished: %d  " % (interval_bit_length, i))
          sys.stdout.flush()
       if debug:
          print 'Current possible message space: %r' % list_M
-      if len(M) == 1 and gmpy.mpz(list_M[0][1]) == gmpy.mpz(list_M[0][0]):
-         return (list_M[0][0].binary()) # FIXME Doesn't work for non-PKCS-conforming ciphertext
+      if len(M) == 1 and interval_bit_length < 8:
+         for message in range(list_M[0][0],list_M[0][1]+1):
+            if pow(message, exponent, modulus) == c0:
+               return long_to_string(message) # FIXME Doesn't work for non-PKCS-conforming ciphertext
+         # Something went wrong...
+         print 'Debug: approximate message is {}'.format(repr(list_M[0][0].binary()))
+         return False
       i += 1
 
 
