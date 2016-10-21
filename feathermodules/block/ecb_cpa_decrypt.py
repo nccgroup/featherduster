@@ -31,6 +31,7 @@ def generate_ecb_cpa_decrypt_attack_script(ciphertexts):
       print '[*] Couldn\'t write to the file with the name provided. Please try again.'
       return False
    print '[+] Done! Your script is available at %s' % options['filename']
+   return True
 
 
 def process_options(options, ciphertexts):

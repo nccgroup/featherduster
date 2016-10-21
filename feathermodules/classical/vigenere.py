@@ -17,7 +17,8 @@ def break_vigenere(ciphertexts):
          for key in keys:
             results.append('Key found for sample %d: "%s". Decrypts to: %s' % (i+1, key, ca.translate_vigenere(sample, key, decrypt=True)))
 
-   return '\n'.join(results)
+   print '\n'.join(results)
+   return results
 
 feathermodules.module_list['vigenere'] = {
    'attack_function': break_vigenere,

@@ -6,11 +6,12 @@ def multi_byte_xor_attack(ciphertexts):
    results = []
    print '[+] Running multi-byte XOR brute force attack...'
    for ciphertext in ciphertexts:
-      result = '\nBest candidate decryptions:\n' + '-'*40 + '\n'
+      print '\nBest candidate decryptions for ' + ciphertext[:20] + '...:\n' + '-'*40 + '\n'
       result_list = ca.break_multi_byte_xor(ciphertext, verbose=True, num_answers=options['number_of_answers'])
-      result += '\n'.join([repr(result_list_item) for result_list_item in result_list])
-      results.append(result)
-   return '\n\n'.join(results)
+      print '\n'.join(result_list)
+      results.append(result_list)
+      
+   return results
 
 def prepare_options(options):
    try:

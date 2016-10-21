@@ -13,6 +13,7 @@ from ishell.command import Command
 import feathermodules
 
 feathermodules.samples = []
+feathermodules.results = False
 feathermodules.selected_attack_name = ''
 feathermodules.current_options = {}
 
@@ -53,13 +54,38 @@ class ImportManualEntryCommand(Command):
    def run(self, line):
       feathermodules.samples.append(raw_input('Please enter your sample: ').strip())
 
+
+class ImportResultsCommand(Command):
+   def run(self, line):
+      if not feathermodules.results:
+         print 'Last module failed to produce results.'
+      elif feathermodules.results == True:
+         print 'Last module succeeded, but did not return results.'
+      else:
+         print 'Last results (long values may be truncated):'
+         print '-'*80
+         for i in range(len(feathermodules.results)):
+            print '{0:d}: {1:60s}'.format(i, repr(feathermodules.results[i]))
+      
+      selection = raw_input('\nPlease enter your selection by number, or \'all\' for all: ')
+      try:
+         if selection == 'all':
+            feathermodules.samples.extend(feathermodules.results)
+         elif int(selection) < len(feathermodules.results):
+            feathermodules.samples.append(feathermodules.results[int(selection)])
+         else:
+            print 'Invalid entry, please try again.'
+      except ValueError:
+         print 'Invalid entry, please try again.'
+         
+
 class ImportClearCommand(Command):
    def run(self, line):
       feathermodules.samples = []
 
 class ImportCommand(Command):
    def args(self):
-      return ['multifile', 'singlefile', 'manualentry', 'clear']
+      return ['multifile', 'singlefile', 'manualentry', 'results', 'clear']
 
 import_sample = ImportCommand('import', help='Import samples for analysis', dynamic_args=True)
 
@@ -75,6 +101,10 @@ import_manualentry = ImportManualEntryCommand(
    'manualentry',
    help='Manually enter a single sample',
    dynamic_args=True)
+import_results = ImportResultsCommand(
+   'results',
+   help='Import last module\'s results as samples',
+   dynamic_args=True)
 import_clear = ImportClearCommand(
    'clear',
    help='Clear current sample set',
@@ -83,6 +113,7 @@ import_clear = ImportClearCommand(
 import_sample.addChild(import_multifile)
 import_sample.addChild(import_singlefile)
 import_sample.addChild(import_manualentry)
+import_sample.addChild(import_results)
 import_sample.addChild(import_clear)
 
 # use
@@ -185,7 +216,7 @@ class RunCommand(Command):
       elif feathermodules.selected_attack_name not in feathermodules.module_list.keys():
          print 'Invalid module selection. Please use the \'use\' command.'
          return False
-      print feathermodules.selected_attack['attack_function'](feathermodules.samples)
+      feathermodules.results = feathermodules.selected_attack['attack_function'](feathermodules.samples)
 
 run = RunCommand('run', help='Run the currently selected module')
 
@@ -238,10 +269,24 @@ class UnsetCommand(Command):
    def args(self):
       return feathermodules.selected_attack['options'].keys()
 
+# results
+class ResultsCommand(Command):
+   def run(self, line):
+      if not feathermodules.results:
+         print 'Last module failed to produce results.'
+      elif feathermodules.results == True:
+         print 'Last module succeeded, but did not return results.'
+      else:
+         print 'Last results (long values may be truncated):'
+         print '-'*80
+         for i in range(len(feathermodules.results)):
+            print '{0:d}: {1:60s}'.format(i, repr(feathermodules.results[i]))
+      
 
 set_command = SetCommand('set', help='Set an option (i.e., "set num_answers=3"', dynamic_args=True)
 unset = UnsetCommand('unset', help='Revert an option to its default value', dynamic_args=True)
 options = OptionsCommand('options', help='Show the current option values', dynamic_args=True)
+results = ResultsCommand('results', help='Show the results from the last module run')
 
 
 # Build the console
@@ -258,6 +303,7 @@ fd_console.addChild(run)
 fd_console.addChild(options)
 fd_console.addChild(set_command)
 fd_console.addChild(unset)
+fd_console.addChild(results)
 
 
 #--------

@@ -29,7 +29,10 @@ def fermat_factor_attack(ciphertexts):
       key = RSA.construct(answer)
       print "Found private key:\n%s" % key.exportKey()
    
-   return ''
+   if len(answers) == 0:
+      return False
+   else:
+      return ['N:{},e:{},d:{}'.format(answer) for answer in answers]
 
       
 

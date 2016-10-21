@@ -5,7 +5,10 @@ def break_alpha_shift(ciphertexts):
    results = []
    for ciphertext in ciphertexts:
       results.append(ca.break_alpha_shift(ciphertext))
-   return results
+   print 'Best results of alpha shift solve:'
+   print '-' * 80
+   print '\n'.join([result[0] for result in results])
+   return [result[0] for result in results]
 
 
 feathermodules.module_list['alpha_shift'] = {

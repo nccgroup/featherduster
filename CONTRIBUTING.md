@@ -18,6 +18,9 @@ If you want to write a FeatherModule, the format is relatively simple. A Feather
    * The module's category
    * Keywords for analysis results
    * Options, if any, with default values in the form of strings
+   
+Module main functions should return a list of strings if successful, `False` if unsuccessful,
+or `True` if successful with no output.
 
 An example module can be found under `examples/example_feathermodule.py`.
 

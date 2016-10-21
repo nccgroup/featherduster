@@ -14,11 +14,12 @@ def base_n_solve(samples):
             candidate_list.append(ca.long_to_string(long(sample,base)))
          except:
             continue
-      result += 'Best answers for sample: {0}\n'.format(sample[:36])
-      result += '-'*80
-      result += '\n'.join([repr(x) for x in sorted(candidate_list[:arguments['num_answers']],key=ca.detect_plaintext)])
+      print 'Best answers for sample: {0}\n'.format(sample[:36])
+      print '-'*80
+      results = sorted(candidate_list[:arguments['num_answers']],key=ca.detect_plaintext)
+      print '\n'.join([repr(x) for x in results])
    
-   return result
+   return results
 
       
 

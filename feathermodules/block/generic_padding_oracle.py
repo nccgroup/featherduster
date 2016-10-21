@@ -55,6 +55,7 @@ def generate_generic_padding_oracle_attack_script(ciphertexts):
       return False
    print '[+] Done! Your script is available at %s' % options['filename']
    print '[+] The script as-is will not be functional, please edit the padding_oracle() function as described in the generated script.'
+   return True
 
 def prepare_options(options, ciphertexts):
    if options['blocksize'] == 'auto':

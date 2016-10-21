@@ -9,9 +9,11 @@ def detect_hash_format(hashes):
       options['words'] = options['words'].split(',')
    result = ca.detect_hash_format(options['words'],hashes)
    if result == False:
-      return '[+] Could not detect hash format.'
+      print '[+] Could not detect hash format.'
+      return False
    else:
-      return '[!] Plaintext: %s\n[!] Hash algorithm: %s' % result
+      print '[!] Plaintext: {}\n[!] Hash algorithm: {}'.format(result)
+      return [':'.join(result)]
 
 
 feathermodules.module_list['detect_hash_format'] = {

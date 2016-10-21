@@ -6,6 +6,9 @@ def break_columnar_transposition(ciphertexts):
    results = []
    for ciphertext in ciphertexts:
       results.append(ca.break_columnar_transposition(ciphertext, num_answers=int(arguments['num_answers'])))
+   print 'Best results of columnar transposition solve:'
+   print '-'*80
+   print '\n'.join(results)
    return results
 
 

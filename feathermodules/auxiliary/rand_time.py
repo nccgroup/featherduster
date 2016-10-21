@@ -20,8 +20,10 @@ def rand_seeded_with_time_check(samples):
    matches = set(prng_outputs) & set(converted_samples)
    if matches:
       print '[!] %d matches were discovered! This suggests random outputs are based on Mersenne Twister output seeded with the current system time.' % len(matches)
+      return matches
    else:
       print '[+] No matches discovered.'
+      return False
          
       
 

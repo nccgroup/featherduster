@@ -21,10 +21,10 @@ def reverse_transposition(samples):
          results.append(sample)
       else:
          results.append(sample[::-1])
-   # Feathermodules can print status updates, but all that FeatherDuster will print
-   # is the return value from the module, so we glue all the results together with newlines
-   # and return them as a single string.
-   return '\n'.join(results)
+   print 'Decrypted results:'
+   print '-' * 80
+   print '\n'.join(results)
+   return results
 
 
 feathermodules.module_list['reverse_trans'] = {
