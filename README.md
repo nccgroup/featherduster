@@ -3,7 +3,7 @@
 
 FeatherDuster is a tool written by Daniel "unicornfurnace" Crowley of NCC Group for breaking crypto which tries to make the process of identifying and exploiting weak cryptosystems as easy as possible. Cryptanalib is the moving parts behind FeatherDuster, and can be used independently of FeatherDuster.
 
-Why "FeatherDuster"? There's an in-joke amongst some crypto folk where using crypto poorly to solve a problem that crypto isn't meant to solve is called "sprinkling magical crypto fairy dust on it". FeatherDuster is for cleaning up magical crypto fairy dust.
+Why "FeatherDuster"? There's an in-joke amongst some crypto folk where using crypto poorly, or to solve a problem that crypto isn't meant to solve is called "sprinkling magical crypto fairy dust on it". FeatherDuster is for cleaning up magical crypto fairy dust.
 
 This is a beta release of FeatherDuster. Things may be broken.
 
