@@ -6,7 +6,8 @@ FeatherDuster is a tool for brushing away magical crypto fairy dust.
 '''
 
 import sys
-import glob
+import readline
+import completer
 from ishell.console import Console
 from ishell.command import Command
 
@@ -29,7 +30,11 @@ import cryptanalib as ca
 # import
 class ImportMultiFileCommand(Command):
    def run(self, line):
-      # TODO: open a subconsole or just use readline to get filename w tab complete
+      ishellCompleter = readline.get_completer()
+      readline.set_completer_delims(' \t\n;')
+      readline.parse_and_bind("tab: complete")
+      readline.set_completer(completer.complete)
+
       sample_file = raw_input('Please enter the filename you want to open: ')
       try:
          sample_fh = open(sample_file,'r')
@@ -38,10 +43,16 @@ class ImportMultiFileCommand(Command):
          feathermodules.samples = filter(lambda x: x != '' and x != None, feathermodules.samples)
       except:
          print 'Something went wrong. Sorry! Please try again.'
+      finally:
+         readline.set_completer(ishellCompleter)
 
 class ImportSingleFileCommand(Command):
    def run(self, line):
-      # TODO: open a subconsole or just use readline to get filename w tab complete
+      ishellCompleter = readline.get_completer()
+      readline.set_completer_delims(' \t\n;')
+      readline.parse_and_bind("tab: complete")
+      readline.set_completer(completer.complete)
+
       sample_file = raw_input('Please enter the filename you want to open: ')
       try:
          sample_fh = open(sample_file,'r')
@@ -49,6 +60,8 @@ class ImportSingleFileCommand(Command):
          sample_fh.close()
       except:
          print 'Something went wrong. Sorry! Please try again.'
+      finally:
+         readline.set_completer(ishellCompleter)
 
 class ImportManualEntryCommand(Command):
    def run(self, line):
