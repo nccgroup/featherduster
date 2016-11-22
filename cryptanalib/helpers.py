@@ -174,8 +174,9 @@ def check_key_reuse(samples):
    
    samples - (list) Two or more samples for evaluation
    '''
+   samples = filter(lambda x: len(x) is not 0, samples)
    if len(samples) == 1:
-      print 'Need more than one sample'
+      print 'Need more than one non-null sample'
       return None
    total_length = total_hamming_distance = 0
    for sample in samples[1:]:
