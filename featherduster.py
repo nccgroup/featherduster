@@ -11,6 +11,17 @@ import completer
 from ishell.console import Console
 from ishell.command import Command
 
+try:
+   from IPython import embed
+except ImportError:
+   import code
+
+   def embed():
+      vars = globals()
+      vars.update(locals())
+      shell = code.InteractiveConsole(vars)
+      shell.interact()
+
 import feathermodules
 
 feathermodules.samples = []
@@ -128,6 +139,16 @@ import_sample.addChild(import_singlefile)
 import_sample.addChild(import_manualentry)
 import_sample.addChild(import_results)
 import_sample.addChild(import_clear)
+
+# console
+class ConsoleCommand(Command):
+   def run(self, line):
+      ishellCompleter = readline.get_completer()
+      embed()
+      readline.set_completer(ishellCompleter)
+
+
+console = ConsoleCommand('console', help='Opens an interactive prompt', dynamic_args=True)
 
 # use
 class UseCommand(Command):
@@ -306,6 +327,7 @@ results = ResultsCommand('results', help='Show the results from the last module 
 fd_console = Console(prompt='\nFeatherDuster', prompt_delim='>')
 
 fd_console.addChild(import_sample)
+fd_console.addChild(console)
 fd_console.addChild(use)
 fd_console.addChild(analyze)
 fd_console.addChild(autopwn)
