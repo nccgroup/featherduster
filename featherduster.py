@@ -6,6 +6,7 @@ FeatherDuster is a tool for brushing away magical crypto fairy dust.
 '''
 
 import sys
+import urllib2
 import readline
 import completer
 from ishell.console import Console
@@ -37,7 +38,11 @@ class ImportMultiFileCommand(Command):
 
       sample_file = raw_input('Please enter the filename you want to open: ')
       try:
-         sample_fh = open(sample_file,'r')
+         if sample_file.startswith("http"):
+             sample_fh = urllib2.urlopen(sample_file)
+         else:
+             sample_fh = open(sample_file,'r')
+
          feathermodules.samples.extend([sample.strip() for sample in sample_fh.readlines()])
          sample_fh.close()
          feathermodules.samples = filter(lambda x: x != '' and x != None, feathermodules.samples)
@@ -55,7 +60,11 @@ class ImportSingleFileCommand(Command):
 
       sample_file = raw_input('Please enter the filename you want to open: ')
       try:
-         sample_fh = open(sample_file,'r')
+         if sample_file.startswith("http"):
+             sample_fh = urllib2.urlopen(sample_file)
+         else:
+             sample_fh = open(sample_file,'r')
+
          feathermodules.samples.append(sample_fh.read())
          sample_fh.close()
       except:
