@@ -6,6 +6,7 @@ FeatherDuster is a tool for brushing away magical crypto fairy dust.
 '''
 
 import sys
+import os
 import readline
 import completer
 from ishell.console import Console
@@ -140,6 +141,8 @@ import_sample.addChild(import_manualentry)
 import_sample.addChild(import_results)
 import_sample.addChild(import_clear)
 
+
+
 # console
 class ConsoleCommand(Command):
    def run(self, line):
@@ -149,6 +152,38 @@ class ConsoleCommand(Command):
 
 
 console = ConsoleCommand('console', help='Opens an interactive prompt', dynamic_args=True)
+
+# export to file
+class ExportCommand(Command):
+   def run(self, line):
+      def _formatOutput(res):
+         if isinstance(res, str):
+            return res
+         else:
+             try:
+                 return "\n".join(_formatOutput(r) for r in res)
+             except TypeError:
+                 return str(res)
+
+      ishellCompleter = readline.get_completer()
+      readline.set_completer_delims(' \t\n;')
+      readline.parse_and_bind("tab: complete")
+      readline.set_completer(completer.complete)
+
+      filePath =  raw_input("Please specify a path to the output file: ").strip()
+
+      readline.set_completer(ishellCompleter)
+      if os.path.isfile(filePath):
+         confirm = raw_input("File already exists and will be overwritten, confirm? [y/N] ")
+         if confirm is "" or confirm[0] not in ("y", "Y"):
+            print "Canceled."
+            return
+
+      with open(filePath, "w+") as handle:
+        handle.write(_formatOutput(feathermodules.results))
+
+export = ExportCommand('export', help='Export current results to file', dynamic_args=True)
+
 
 # use
 class UseCommand(Command):
@@ -328,6 +363,7 @@ fd_console = Console(prompt='\nFeatherDuster', prompt_delim='>')
 
 fd_console.addChild(import_sample)
 fd_console.addChild(console)
+fd_console.addChild(export)
 fd_console.addChild(use)
 fd_console.addChild(analyze)
 fd_console.addChild(autopwn)
