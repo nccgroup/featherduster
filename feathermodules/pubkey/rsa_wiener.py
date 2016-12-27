@@ -32,7 +32,7 @@ def rsa_wiener_attack(ciphertexts):
    if len(answers) == 0:
       return False
    else:
-      return ['N:{},e:{},d:{}'.format(answer) for answer in answers]
+      return ['N:{},e:{},d:{}'.format(*answer) for answer in answers]
 
       
 
