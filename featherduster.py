@@ -319,7 +319,7 @@ class SetCommand(Command):
          print 'Usage: set <option>=<value>'
          return False
       option = line_split[1].split('=')[0]
-      value = line_split[1].split('=')[1]
+      value = ''.join(line_split[1].split('=')[1:])
       feathermodules.current_options[option] = value
    def args(self):
       return feathermodules.selected_attack['options'].keys()
