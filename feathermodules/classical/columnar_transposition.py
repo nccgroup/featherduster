@@ -5,8 +5,10 @@ def break_columnar_transposition(ciphertexts):
    arguments=feathermodules.current_options
    results = []
    for ciphertext in ciphertexts:
-      results.append(ca.break_columnar_transposition(ciphertext, num_answers=int(arguments['num_answers'])))
-   print 'Best results of columnar transposition solve:'
+      result = ca.break_columnar_transposition(ciphertext, num_answers=int(arguments['num_answers']))
+      result = '\n'.join(result)
+      results.append(result)
+   print 'Best results of columnar transposition solve(s):'
    print '-'*80
    print '\n'.join(results)
    return results
