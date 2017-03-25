@@ -236,7 +236,10 @@ class AutopwnCommand(Command):
          if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
             print 'Running module: %s' % attack
             feathermodules.current_options = feathermodules.module_list[attack]['options']
-            print feathermodules.module_list[attack]['attack_function'](feathermodules.samples)
+            try:
+               print feathermodules.module_list[attack]['attack_function'](feathermodules.samples)
+            except:
+               print '[*] Module execution failed, please report this issue at https://github.com/nccgroup/featherduster/issues'
    
 autopwn = AutopwnCommand('autopwn', help='Analyze samples and run all attacks', dynamic_args=True)
 
@@ -288,7 +291,11 @@ class RunCommand(Command):
       elif feathermodules.selected_attack_name not in feathermodules.module_list.keys():
          print 'Invalid module selection. Please use the \'use\' command.'
          return False
-      feathermodules.results = feathermodules.selected_attack['attack_function'](feathermodules.samples)
+      try:
+         feathermodules.results = feathermodules.selected_attack['attack_function'](feathermodules.samples)
+      except:
+         print '[*] Module execution failed, please report this issue at https://github.com/nccgroup/featherduster/issues'
+         
 
 run = RunCommand('run', help='Run the currently selected module')
 
