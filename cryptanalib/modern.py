@@ -34,7 +34,7 @@ def lcg_next_states(known_states_in_order, num_states=5, a='unknown', c='unknown
    
    known_states_in_order - (list of ints) Known states from the
       LCG.
-   num_of_states - (int) The number of future states to generate.
+   num_states - (int) The number of future states to generate.
    a - (int) The multiplier for the LCG.
    c - (int) The addend for the LCG.
    m - (int) The modulus for the LCG.
@@ -62,7 +62,7 @@ def lcg_prev_states(known_states_in_order, num_states=5, a='unknown', c='unknown
    
    known_states_in_order - (list of ints) Known states from the
       LCG.
-   num_of_states - (int) The number of past states to generate.
+   num_states - (int) The number of past states to generate.
    a - (int) The multiplier for the LCG.
    c - (int) The addend for the LCG.
    m - (int) The modulus for the LCG.
@@ -86,7 +86,7 @@ def libc_rand_next_states(known_states_in_order, num_states):
    A wrapper around lcg_next_states with hardcoded
    a, c, and m parameters.
    '''
-   return lcg_next_states(known_states_in_order, num_of_states, a=1103515245, c=12345, m=2**31)
+   return lcg_next_states(known_states_in_order, num_states, a=1103515245, c=12345, m=2**31)
 
 def libc_rand_prev_states(known_states_in_order, num_states):
    '''
@@ -94,7 +94,7 @@ def libc_rand_prev_states(known_states_in_order, num_states):
    a, c, and m parameters corresponding to libc rand(),
    used in C and Perl 
    '''
-   return lcg_prev_states(known_states_in_order, num_of_states, a=1103515245, c=12345, m=2**31)
+   return lcg_prev_states(known_states_in_order, num_states, a=1103515245, c=12345, m=2**31)
 
 
 
