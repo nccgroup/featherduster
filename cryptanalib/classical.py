@@ -321,6 +321,13 @@ def break_vigenere(ciphertext, scan_range, num_answers=1, max_best_shifts=2,
    # First strip cipher from non-alphabetical characters, convert to upper
    ciphertext = filter(lambda x: x.isalpha(), ciphertext).upper()
 
+   # This module has had issues dealing with short ciphertexts, and it's
+   # statistically super unlikely to solve ciphertexts short enough to cause
+   # it issues. Reject any ciphertexts less than 10 characters in length.
+   if len(ciphertext) < 10:
+      print '[*] Skipping sample, too short to solve statistically'
+      return False
+
    # Determine the key length
    key_lengths = evaluate_vigenere_key_length(ciphertext, scan_range)[:num_key_lengths]
 
