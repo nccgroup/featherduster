@@ -70,6 +70,7 @@ class ImportSingleFileCommand(Command):
          sample_fh = open(sample_file,'r')
          feathermodules.samples.append(sample_fh.read())
          sample_fh.close()
+         feathermodules.samples = filter(lambda x: x != '' and x != None, feathermodules.samples)
       except:
          print 'Something went wrong. Sorry! Please try again.'
       finally:
@@ -78,6 +79,7 @@ class ImportSingleFileCommand(Command):
 class ImportManualEntryCommand(Command):
    def run(self, line):
       feathermodules.samples.append(raw_input('Please enter your sample: ').strip())
+      feathermodules.samples = filter(lambda x: x != '' and x != None, feathermodules.samples)
 
 
 class ImportResultsCommand(Command):
@@ -100,6 +102,7 @@ class ImportResultsCommand(Command):
             feathermodules.samples.append(feathermodules.results[int(selection)])
          else:
             print 'Invalid entry, please try again.'
+         feathermodules.samples = filter(lambda x: x != '' and x != None, feathermodules.samples)
       except ValueError:
          print 'Invalid entry, please try again.'
          
