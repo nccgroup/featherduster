@@ -14,6 +14,8 @@ def break_vigenere(ciphertexts):
                                   num_key_guesses=int(options['num_key_guesses']),
                                   coefficient_char_deviation=float(options['coefficient_char_deviation']),
                                   coefficient_word_count=float(options['coefficient_word_count']))
+         if keys == False:
+            continue
          for key in keys:
             results.append('Key found for sample %d: "%s". Decrypts to: %s' % (i+1, key, ca.translate_vigenere(sample, key, decrypt=True)))
 

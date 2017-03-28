@@ -212,7 +212,9 @@ class AnalyzeCommand(Command):
       print '[+] Analyzing samples...'
       analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True)
       if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
-         feathermodules.samples = analysis_results['decoded_ciphertexts']
+         decode = raw_input('[+] Analysis suggests encoded samples. Decode before continuing (Y/n)? ')
+         if decode.lower() not in ('n','no','nope','nah','no thank you'):
+            feathermodules.samples = analysis_results['decoded_ciphertexts']
       print ''
       print '[+] Suggested modules:'
       for attack in feathermodules.module_list.keys():
