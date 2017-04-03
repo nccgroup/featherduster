@@ -347,7 +347,12 @@ class UnsetCommand(Command):
          print 'Usage: unset <option>'
          return False
       option = line_split[1]
-      feathermodules.current_options[option] = feathermodules.selected_attack['options'][option]
+      try:
+         feathermodules.current_options[option] = feathermodules.selected_attack['options'][option]
+      except KeyError:
+         print '[*] That option doesn\'t exist, sorry!'
+      except AttributeError:
+         print '[*] Please select an attack first!'
    def args(self):
       return feathermodules.selected_attack['options'].keys()
 
