@@ -19,4 +19,4 @@ install:
 
 script:
   - python -c 'from tests import *'
-  - sh tests/*.sh
+  - for test in tests/*.sh; do sh $test; done
