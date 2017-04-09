@@ -1,5 +1,5 @@
 echo 'Testing use command...'
-python ./featherduster.py <<EOF
+python ./featherduster/featherduster.py <<EOF
 use thisisnotarealmodule
 use alpha_shift
 exit

@@ -1,5 +1,5 @@
 echo 'Testing FeatherDuster export command...'
-python ./featherduster.py << EOF 
+python ./featherduster/featherduster.py << EOF 
 import manualentry
 gdkkn
 use alpha_shift

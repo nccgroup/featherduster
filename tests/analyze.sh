@@ -1,5 +1,5 @@
 echo 'Testing FeatherDuster analyze command...'
-python ./featherduster.py <<EOF
+python ./featherduster/featherduster.py <<EOF
 import manualentry
 12345678
 n

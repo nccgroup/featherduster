@@ -1,10 +1,7 @@
 import os
 import sys
 
-path_to_featherduster = os.path.dirname(sys.argv[0])
-if path_to_featherduster == '':
-   path_to_featherduster = os.getcwd()
-path_to_custom_dir = path_to_featherduster + '/feathermodules/custom/'
+path_to_custom_dir = os.path.dirname(os.path.realpath(__file__))
 
 def py_and_not_init(filename):
    return (filename[-3:] == '.py' and filename != '__init__.py')
