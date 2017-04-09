@@ -11,7 +11,7 @@ This is a beta release of FeatherDuster. Things may be broken.
 If you find a bug, please file an issue. Pull requests are welcome and encouraged.
 
 # FeatherDuster Usage
-`python featherduster.py [ciphertext file 1] ... [ciphertext file n]`
+`python featherduster/featherduster.py [ciphertext file 1] ... [ciphertext file n]`
 
 If you have installed FeatherDuster into your virtual environment, you can simply run it as:
 ```bash
