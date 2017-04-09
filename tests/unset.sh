@@ -1,5 +1,5 @@
 echo 'Testing unset command...'
-python ./featherduster.py <<EOF
+python ./featherduster/featherduster.py <<EOF
 unset
 unset foo
 use vigenere

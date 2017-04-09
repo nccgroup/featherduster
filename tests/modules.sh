@@ -1,5 +1,5 @@
 echo 'Testing modules command...'
-python ./featherduster.py <<EOF
+python ./featherduster/featherduster.py <<EOF
 modules
 EOF
 
