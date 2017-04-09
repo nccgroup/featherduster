@@ -423,3 +423,7 @@ For a command reference, press Enter on a blank line.
 fd_console.loop()
 
 print '\nThank you for using FeatherDuster!'
+
+def main():
+   # blank function so I don't have to restructure this whole file to address an annoying error 
+   return 0
