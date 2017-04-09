@@ -21,4 +21,4 @@ COPY . .
 
 # Load the entrypoint script to be run later
 #RUN ["cd /opt/featherduster && python featherduster.py"]
-ENTRYPOINT ["python", "/opt/featherduster/featherduster.py"]
+ENTRYPOINT ["python", "/opt/featherduster/featherduster/featherduster.py"]
