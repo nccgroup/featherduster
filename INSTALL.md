@@ -1,10 +1,20 @@
 # Installation
 ~~~
+sudo apt-get install libgmp3-dev # debian/ubuntu specific, your os may have a differently named libGMP package
 git clone https://github.com/nccgroup/featherduster.git
 cd featherduster
 python setup.py install
-sudo apt-get install libgmp3-dev
 ~~~
+
+# pip/virtualenv
+FeatherDuster is pip installable. This means you can simply git clone and pip install like so: 
+```bash
+$ git clone https://github.com/nccgroup/featherduster.git
+$ cd featherduster
+$ pip install .
+```
+
+Note: You likely want to install into a [python virtual environment](http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/).
 
 #### Dependencies
 ~~~

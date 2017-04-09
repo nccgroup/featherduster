@@ -10,16 +10,6 @@ This is a beta release of FeatherDuster. Things may be broken.
 
 If you find a bug, please file an issue. Pull requests are welcome and encouraged.
 
-# FeatherDuster Installation
-FeatherDuster is pip installable. This means you can simply git clone and pip install like so:
-```bash
-$ git clone https://github.com/nccgroup/featherduster.git
-$ cd featherduster
-$ pip install .
-```
-
-Note: You likely want to install into a [python virtual environment](http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/).
-
 # FeatherDuster Usage
 `python featherduster.py [ciphertext file 1] ... [ciphertext file n]`
 
