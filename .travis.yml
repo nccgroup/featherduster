@@ -1,22 +1,19 @@
-language:
-  - python
+---
+dist: trusty
+sudo: false
 
-python:
-  - "2.7"
+language: python
+python: '2.7'
+cache: pip
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-4.8
+matrix:
+  fast-finish: true
 
-before_install:
-  - sudo apt-get install libgmp-dev
+env:
+  - TEST_RUN='./tests/travis_python_tests'
+  - TEST_RUN='./tests/travis_shell_tests'
 
 install:
-  - python setup.py install
+  - pip install -U .
 
-script:
-  - python -c 'from tests import *'
-  - for test in tests/*.sh; do sh $test; done
+script: "$TEST_RUN"
