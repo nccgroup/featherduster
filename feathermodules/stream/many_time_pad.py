@@ -3,7 +3,10 @@ import feathermodules
 
 def many_time_pad_attack(ciphertexts):
    arguments = get_arguments(ciphertexts)
-   return ca.break_many_time_pad(arguments['ciphertexts'],arguments['plaintext_language'], verbose=True)
+   plaintexts = ca.break_many_time_pad(arguments['ciphertexts'],arguments['plaintext_language'], verbose=True)
+   print '\n'.join(plaintexts)
+   return plaintexts
+
 
 def get_arguments(ciphertexts):
    arguments = {}
@@ -16,6 +19,6 @@ feathermodules.module_list['many_time_pad'] = {
    'attack_function':many_time_pad_attack,
    'type':'stream',
    'keywords':['key_reuse', 'collectively_low_entropy'],
-   'description':'A statistical attack against keystream reuse in various stream ciphers.',
+   'description':'A statistical attack against keystream reuse in various stream ciphers, and the one-time pad.',
    'options':{}
 }
