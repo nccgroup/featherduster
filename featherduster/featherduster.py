@@ -238,11 +238,8 @@ class AutopwnCommand(Command):
          if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
             print 'Running module: %s' % attack
             feathermodules.current_options = feathermodules.module_list[attack]['options']
-            try:
-               print feathermodules.module_list[attack]['attack_function'](feathermodules.samples)
-            except:
-               print '[*] Module execution failed, please report this issue at https://github.com/nccgroup/featherduster/issues'
-   
+            print feathermodules.module_list[attack]['attack_function'](feathermodules.samples)
+
 autopwn = AutopwnCommand('autopwn', help='Analyze samples and run all attacks', dynamic_args=True)
 
 
@@ -293,10 +290,13 @@ class RunCommand(Command):
       elif feathermodules.selected_attack_name not in feathermodules.module_list.keys():
          print 'Invalid module selection. Please use the \'use\' command.'
          return False
-      try:
+      if debug:
          feathermodules.results = feathermodules.selected_attack['attack_function'](feathermodules.samples)
-      except:
-         print '[*] Module execution failed, please report this issue at https://github.com/nccgroup/featherduster/issues'
+      else:
+         try:
+            feathermodules.results = feathermodules.selected_attack['attack_function'](feathermodules.samples)
+         except:
+            print '[*] Module execution failed, please report this issue at https://github.com/nccgroup/featherduster/issues'
          
 
 run = RunCommand('run', help='Run the currently selected module')
@@ -398,11 +398,14 @@ fd_console.addChild(results)
 #--------
 # Main menu
 #
+debug = False
 
 for filename in sys.argv[1:]:
    if filename in ['-h', '--help']:
       print 'Usage: python featherduster.py [ciphertext file 1] ... [ciphertext file n]'
       exit()
+   elif filename in ['-d', '--debug']:
+      debug = True
    try:
       sample_fh = open(filename,'r')
       feathermodules.samples.append(sample_fh.read())
