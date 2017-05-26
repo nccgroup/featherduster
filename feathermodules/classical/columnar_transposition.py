@@ -11,7 +11,7 @@ def break_columnar_transposition(ciphertexts):
       results.append(result)
    print 'Best results of columnar transposition solve(s):'
    print '-'*80
-   print '\n'.join(results)
+   print '\n'.join(str(v) for v in results)
    return results
 
 
