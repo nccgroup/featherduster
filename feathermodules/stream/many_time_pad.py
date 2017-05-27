@@ -4,7 +4,8 @@ import feathermodules
 def many_time_pad_attack(ciphertexts):
    arguments = get_arguments(ciphertexts)
    plaintexts = ca.break_many_time_pad(arguments['ciphertexts'],arguments['plaintext_language'], verbose=True)
-   print '\n'.join(plaintexts)
+   if plaintexts != False:
+      print '\n'.join(plaintexts)
    return plaintexts
 
 
