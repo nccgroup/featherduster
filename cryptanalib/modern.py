@@ -997,7 +997,7 @@ def cbcr(new_plaintext, oracle, block_size, is_padding_oracle=False, verbose=Fal
       new_ciphertext = utility_block + new_ciphertext
    return new_ciphertext
 
-def break_single_byte_xor(ciphertext,num_answers=5,pt_freq_table=frequency.frequency_tables['english'], detect_words=True, charset=None):
+def break_single_byte_xor(ciphertext,num_answers=20,pt_freq_table=frequency.frequency_tables['english'], detect_words=True, charset=None, verbose=False):
    '''
    Return a list of likely successful single byte XOR decryptions sorted by score
    
@@ -1017,15 +1017,11 @@ def break_single_byte_xor(ciphertext,num_answers=5,pt_freq_table=frequency.frequ
 
    # Generate a charset sorted by frequency for the plaintext
    sample_charset = generate_optimized_charset(ciphertext)
-   print 'debug expected_charset = '+repr(expected_charset)
-   print 'debug sample_charset = '+repr(sample_charset)
    # XOR the charsets together and generate another optimized charset to be used as possible keys
    potential_keys = generate_optimized_charset(sxor(expected_charset,sample_charset))
-   print 'debug charset xor result = '+repr(sxor(expected_charset,sample_charset))
-   print 'debug potential keys = '+repr(potential_keys)
    # If the number of potential keys is smaller than $num_answers, alert the user and use what we have
    num_keys = min(len(potential_keys),num_answers)
-   if num_keys < num_answers:
+   if num_keys < num_answers and verbose:
       print '[*] Could not return the requested number of answers. Returning all possible answers.'
    
    # Try xor with the best key bytes
@@ -1077,7 +1073,7 @@ def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_tabl
             sys.stdout.write("\rProcessing chunk %d of %d" % (current_chunk, chunks_to_process))
             sys.stdout.flush()
             current_chunk += 1
-         best_key += chr(break_single_byte_xor(ct_chunk,1,pt_freq_table=pt_freq_table_single_chars, detect_words=False)[0][1][1])
+         best_key += break_single_byte_xor(ct_chunk,1,pt_freq_table=pt_freq_table_single_chars, detect_words=False)[0][1][1]
       answers[best_key] = sxor(ciphertext,best_key*((len(ciphertext)/best_keysize)+1))
       if verbose:
          print ''
