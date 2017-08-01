@@ -423,10 +423,27 @@ def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['e
       return score
 
 
+def generate_optimized_charset_from_frequency(freq_table, include_zero_freq=False):
+   '''
+   Given a character frequency table such as those returned by generate_frequency_table(),
+   return a string with only single characters sorted by frequency of occurance descending
+   '''
+   # Filter out frequency items to only single characters
+   single_char_freq_table = dict(filter(lambda x: len(x[0])==1, freq_table.items()))
+   # Filter out items which never occur
+   if not include_zero_freq:
+      single_char_freq_table = dict(filter(lambda x: x[1] != 0, single_char_freq_table.items()))
+   # Sort items by frequency, concatenate characters and return as a single string
+   return ''.join([x[0] for x in sorted(single_char_freq_table.items(), key=lambda x: x[1], reverse=True)])
+   
+   
+
 def generate_frequency_table(text,charset):
    '''
    Generate a character frequency table for a given text
-   and charset as list of chars, digraphs, etc
+   and charset as dict with character or string as key and
+   frequency of appearance as value expressed as a decimal
+   percentage
 
    text - A sample of plaintext to analyze for frequency data
    charset - (list of strings) The set of items to count in the plaintext
@@ -450,7 +467,7 @@ def generate_frequency_table(text,charset):
          freq_table[key] = 0 
    return freq_table
 
-def generate_optimized_charset(text):
+def generate_optimized_charset(text, include_zero_freq=False):
    '''
    Given a sample text, generate a frequency table and
    convert it to a string of characters sorted by frequency
@@ -464,8 +481,7 @@ def generate_optimized_charset(text):
 
    all_chars = map(chr, range(256))
    freq_table = generate_frequency_table(text, charset=all_chars)
-   charset = sorted(freq_table, key=lambda x: freq_table[x], reverse=True)
-   return ''.join(charset)
+   return generate_optimized_charset_from_frequency(freq_table, include_zero_freq=include_zero_freq)
    
 def hamming_distance(string1, string2):
    '''
