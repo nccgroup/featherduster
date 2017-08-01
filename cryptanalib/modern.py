@@ -997,8 +997,7 @@ def cbcr(new_plaintext, oracle, block_size, is_padding_oracle=False, verbose=Fal
       new_ciphertext = utility_block + new_ciphertext
    return new_ciphertext
 
-
-def break_single_byte_xor(ciphertext,num_answers=5,pt_freq_table=frequency.frequency_tables['english'], detect_words=True):
+def break_single_byte_xor(ciphertext,num_answers=5,pt_freq_table=frequency.frequency_tables['english'], detect_words=True, charset=None):
    '''
    Return a list of likely successful single byte XOR decryptions sorted by score
    
@@ -1009,12 +1008,32 @@ def break_single_byte_xor(ciphertext,num_answers=5,pt_freq_table=frequency.frequ
    '''
    answers = {}
    ciphertext_len = len(ciphertext)
-   # Try xor with every possible byte value and score the resulting plaintext
-   for key in xrange(256):
-      answer = sxor(ciphertext, chr(key)*ciphertext_len)
+
+   # If a pre-generated charset sorted by frequency descending is not provided, make one
+   if charset != None:
+      expected_charset = charset
+   else:
+      expected_charset = generate_optimized_charset_from_frequency(pt_freq_table)
+
+   # Generate a charset sorted by frequency for the plaintext
+   sample_charset = generate_optimized_charset(ciphertext)
+   print 'debug expected_charset = '+repr(expected_charset)
+   print 'debug sample_charset = '+repr(sample_charset)
+   # XOR the charsets together and generate another optimized charset to be used as possible keys
+   potential_keys = generate_optimized_charset(sxor(expected_charset,sample_charset))
+   print 'debug charset xor result = '+repr(sxor(expected_charset,sample_charset))
+   print 'debug potential keys = '+repr(potential_keys)
+   # If the number of potential keys is smaller than $num_answers, alert the user and use what we have
+   num_keys = min(len(potential_keys),num_answers)
+   if num_keys < num_answers:
+      print '[*] Could not return the requested number of answers. Returning all possible answers.'
+   
+   # Try xor with the best key bytes
+   for key in potential_keys[:num_keys]:
+      answer = sxor(ciphertext, key*ciphertext_len)
       answers[answer] = (detect_plaintext(answer,pt_freq_table=pt_freq_table,detect_words=detect_words),key)
    # Return the best resulting plaintexts and associated score sorted by score
-   return sorted(answers.items(),key=operator.itemgetter(1))[:num_answers]
+   return sorted(answers.items(), key=lambda x: x[1])
 
 def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_table=frequency.frequency_tables['english'], verbose=False):
    '''
