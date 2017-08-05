@@ -14,6 +14,8 @@ def aes_key_brute(samples):
    default_keylist = [
       '0'*32,
       'f'*32,
+      '30'*16, #'0'*16 hex encoded
+      '66'*16, #'f'*16 hex encoded
       '31323334353637383930313233343536',
       '30313233343536373839303132333435',
       '70617373776f726470617373776f7264', #'passwordpassword'.encode('hex')
@@ -46,12 +48,21 @@ def aes_key_brute(samples):
    # filter samples into one-block samples and multi-block samples
    one_block_samples = filter(lambda x: len(x)==16, samples)
    multi_block_samples = filter(lambda x: len(x) > 16, samples)
-
+   
+   if len(multi_block_samples) == 1:
+      print '[*] One a single multi-block sample exists. This has a 1 in 256 chance of false positives with the CBC test.'
+   if len(one_block_samples) == 1:
+      print '[*] One a single one-block sample exists. This has a 1 in 256 chance of false positives with the ECB, CBC key-as-IV, and CBC known IV tests.'
+   
    for key in keys:
-      key = key.decode('hex')
+      try:
+         key = key.decode('hex')
+      except:
+         print '[*] Bad key provided, bailing out.'
+         return False
 
       # set all bad_decryption flags to False
-      ecb_bad_decrypt = cbc_null_iv_bad_decrypt = cbc_key_as_iv_bad_decrypt = cbc_bad_decrypt = False
+      ecb_bad_decrypt = cbc_key_as_iv_bad_decrypt = cbc_bad_decrypt = cbc_known_iv_bad_decrypt = False
 
       # ECB
       for sample in samples:
@@ -62,45 +73,46 @@ def aes_key_brute(samples):
             break
 
       # CBC last block with second to last block as IV
-      for sample in multi_block_samples:
-         cipher = AES.new(key, AES.MODE_CBC, sample[-32:-16])
-         # If any decryption fails to produce valid padding, flag bad CBC decryption and break
-         if decrypt_and_check(cipher, sample[-16:]) == False:
-            cbc_bad_decrypt = True
-            break
-
-      if options['known_iv'] != '':
-         # CBC with entered IV
-         for sample in one_block_samples:
-            cipher = AES.new(key, AES.MODE_CBC, options['known_iv'].decode('hex'))
+      if len(multi_block_samples) != 0:
+         for sample in multi_block_samples:
+            cipher = AES.new(key, AES.MODE_CBC, sample[-32:-16])
             # If any decryption fails to produce valid padding, flag bad CBC decryption and break
-            if decrypt_and_check(cipher, sample) == False:
+            if decrypt_and_check(cipher, sample[-16:]) == False:
                cbc_bad_decrypt = True
                break
       else:
-         # CBC with null IV
-         for sample in one_block_samples:
-            cipher = AES.new(key, AES.MODE_CBC, '\x00'*16)
-            # If any decryption fails to produce valid padding, flag bad CBC_null_IV decryption and break
-            if decrypt_and_check(cipher, sample) == False:
-               cbc_null_iv_bad_decrypt = True
-               break
-         # CBC with key as IV
-         for sample in one_block_samples:
-            cipher = AES.new(key, AES.MODE_CBC, key)
-            # If any decryption fails to produce valid padding, flag bad CBC_key_as_IV decryption and break
-            if decrypt_and_check(cipher, sample) == False:
-               cbc_key_as_iv_bad_decrypt = True
-               break
+         cbc_bad_decrypt = True
+      
+      if len(one_block_samples) != 0:
+         if options['known_iv'] != '':
+            cbc_key_as_iv_bad_decrypt = True
+            # CBC with entered IV
+            for sample in one_block_samples:
+               cipher = AES.new(key, AES.MODE_CBC, options['known_iv'].decode('hex'))
+               # If any decryption fails to produce valid padding, flag bad CBC decryption and break
+               if decrypt_and_check(cipher, sample) == False:
+                  cbc_known_iv_bad_decrypt = True
+                  break
+         else:
+            cbc_known_iv_bad_decrypt = True
+            # CBC with key as IV
+            for sample in one_block_samples:
+               cipher = AES.new(key, AES.MODE_CBC, key)
+               # If any decryption fails to produce valid padding, flag bad CBC_key_as_IV decryption and break
+               if decrypt_and_check(cipher, sample) == False:
+                  cbc_key_as_iv_bad_decrypt = True
+                  break
+      else:
+         cbc_known_iv_bad_decrypt = cbc_key_as_iv_bad_decrypt = True
 
       if not ecb_bad_decrypt:
-         results += key.encode('hex') + ' may be the correct key in ECB mode.'
+         results.append(key.encode('hex') + ' may be the correct key in ECB mode or CBC mode with static all-NUL IV.')
       if not cbc_bad_decrypt:
-         results += key.encode('hex') + ' may be the correct key in CBC mode.'
-      if not cbc_null_iv_bad_decrypt:
-         results += key.encode('hex') + ' may be the correct key in CBC mode with an all-NUL IV.'
+         results.append(key.encode('hex') + ' may be the correct key in CBC mode, IV unknown.')
       if not cbc_key_as_iv_bad_decrypt:
-         results += key.encode('hex') + ' may be the correct key and static IV in CBC mode.'
+         results.append(key.encode('hex') + ' may be the correct key and static IV in CBC mode.')
+      if not cbc_known_iv_bad_decrypt:
+         results.append(key.encode('hex') + ' may be the correct key in CBC mode using the provided IV.')
          
             
    print 'Potentially correct AES keys:'
