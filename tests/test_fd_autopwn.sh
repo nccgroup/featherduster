@@ -1,5 +1,5 @@
 echo Testing FeatherDuster autopwn...
-python featherduster.py <<EOF | grep \'hello\'
+python featherduster.py --debug <<EOF | grep \'hello\'
 autopwn
 import manualentry
 gdkkn

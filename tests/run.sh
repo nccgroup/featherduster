@@ -1,5 +1,5 @@
 echo 'Testing run command...'
-python ./featherduster/featherduster.py <<EOF
+python ./featherduster/featherduster.py --debug <<EOF
 run
 use alpha_shift
 run

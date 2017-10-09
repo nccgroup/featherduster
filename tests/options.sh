@@ -1,5 +1,5 @@
 echo 'Testing options command...'
-python ./featherduster/featherduster.py <<EOF
+python ./featherduster/featherduster.py --debug <<EOF
 options
 use alpha_shift
 options
