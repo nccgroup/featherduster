@@ -1,8 +1,9 @@
 # Contributing
 If you'd like to contribute to FeatherDuster or Cryptanalib, you can do so in a few ways:
 
-* Submitting bug reports and enhancement requests through github issues
+* Submitting bug reports and enhancement requests through Github issues
 * Submitting pull requests to resolve issues
+   * Issues that are easily addressed are marked with the `easy` label
 * Contributing attack or helper functions to Cryptanalib
 * Contributing FeatherModules
 
