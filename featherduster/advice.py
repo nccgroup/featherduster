@@ -179,56 +179,56 @@ def give_advice():
    if give_sample_advice == True:
       advice += advice_text['gathering_samples']
 
-   if feathermodules.results == False:
+   if feathermodules.analysis_results == False:
       advice += advice_text['analysis_guide']
       print advice
       return
    
-   if feathermodules.results['decoded_ciphertexts']:
+   if feathermodules.analysis_results['decoded_ciphertexts']:
       advice += advice_text['decoded_ciphertexts']
 
    merkle_damgard = False
-   if feathermodules.results['md_hashes']:
+   if feathermodules.analysis_results['md_hashes']:
       advice += advice_text['md_hashes']
       merkle_damgard = True
-   if feathermodules.results['sha1_hashes']:
+   if feathermodules.analysis_results['sha1_hashes']:
       advice += advice_text['sha1_hashes']
       merkle_damgard = True
-   if feathermodules.results['sha2_hashes']:
+   if feathermodules.analysis_results['sha2_hashes']:
       advice += advice_text['sha2_hashes']
       merkle_damgard = True
    if merkle_damgard == True:
       advice += advice_text['merkle_damgard']
 
-   if feathermodules.results['blocksize'] != False:
-      if feathermodules.results['blocksize'] == 8:
+   if feathermodules.analysis_results['blocksize'] != False:
+      if feathermodules.analysis_results['blocksize'] == 8:
          advice += advice_text['blocksize_8']
-      if feathermodules.results['blocksize'] == 16:
+      if feathermodules.analysis_results['blocksize'] == 16:
          advice += advice_text['blocksize_16']
-      if feathermodules.results['ecb']:
+      if feathermodules.analysis_results['ecb']:
          advice += advice_text['ecb']
-      if feathermodules.results['cbc_fixed_iv']:
+      if feathermodules.analysis_results['cbc_fixed_iv']:
          advice += advice_text['cbc_fixed_iv']
          
-   if feathermodules.results['individually_random'] == False or feathermodules.results['collectively_random'] == False:
+   if feathermodules.analysis_results['individually_random'] == False or feathermodules.analysis_results['collectively_random'] == False:
       advice += advice_text['not_random']
-      if feathermodules.results['individually_random'] == False:
+      if feathermodules.analysis_results['individually_random'] == False:
          advice += advice_text['not_individually_random']
       else: 
          advice += advice_text['not_collectively_random']
 
-   if feathermodules.results['rsa_key']:
+   if feathermodules.analysis_results['rsa_key']:
       advice += advice_text['rsa_key']
-      if feathermodules.results['rsa_private_key']:
+      if feathermodules.analysis_results['rsa_private_key']:
          advice += advice_text['rsa_private_key']
-      if feathermodules.results['rsa_small_n']:
+      if feathermodules.analysis_results['rsa_small_n']:
          advice += advice_text['rsa_small_n']
    
-   if feathermodules.results['is_transposition_only']:
+   if feathermodules.analysis_results['is_transposition_only']:
       advice += advice_text['is_transposition_only']
-   if feathermodules.results['is_polybius']:
+   if feathermodules.analysis_results['is_polybius']:
       advice += advice_text['is_polybius']
-   if feathermodules.results['is_all_alpha']:
+   if feathermodules.analysis_results['is_all_alpha']:
       advice += advice_text['is_all_alpha']
 
    pydoc.pager(advice)
