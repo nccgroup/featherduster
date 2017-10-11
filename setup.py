@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='featherduster',
-      version='0.2',
+      version='0.3',
       description='An automated cryptanalysis tool',
       url='http://github.com/nccgroup/featherduster',
       author='Daniel "unicornfurnace" Crowley',

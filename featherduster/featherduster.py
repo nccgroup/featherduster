@@ -8,7 +8,8 @@ FeatherDuster is a tool for brushing away magical crypto fairy dust.
 import sys
 import os
 import readline
-import completer
+import completer #readline completion
+import advice #advice text
 from ishell.console import Console
 from ishell.command import Command
 
@@ -27,6 +28,7 @@ import feathermodules
 
 feathermodules.samples = []
 feathermodules.results = False
+feathermodules.analysis_results = False
 feathermodules.selected_attack_name = ''
 feathermodules.current_options = {}
 
@@ -146,6 +148,15 @@ import_sample.addChild(import_clear)
 
 
 
+# advice
+class AdviceCommand(Command):
+   def run(self, line):
+      advice.give_advice()
+
+advice_command = AdviceCommand('advice', help='Provides advice on next steps and research based on current state')
+
+
+
 # console
 class ConsoleCommand(Command):
    def run(self, line):
@@ -155,6 +166,8 @@ class ConsoleCommand(Command):
 
 
 console = ConsoleCommand('console', help='Opens an interactive prompt', dynamic_args=True)
+
+
 
 # export to file
 class ExportCommand(Command):
@@ -210,15 +223,15 @@ class AnalyzeCommand(Command):
          print 'No loaded samples. Please use the \'import\' command.'
          return False
       print '[+] Analyzing samples...'
-      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True)
-      if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
+      feathermodules.analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True)
+      if feathermodules.analysis_results['decoded_ciphertexts'] != feathermodules.samples:
          decode = raw_input('[+] Analysis suggests encoded samples. Decode before continuing (Y/n)? ')
          if decode.lower() not in ('n','no','nope','nah','no thank you'):
-            feathermodules.samples = analysis_results['decoded_ciphertexts']
+            feathermodules.samples = feathermodules.analysis_results['decoded_ciphertexts']
       print ''
       print '[+] Suggested modules:'
       for attack in feathermodules.module_list.keys():
-         if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
+         if len(set(feathermodules.module_list[attack]['keywords']) & set(feathermodules.analysis_results['keywords'])) > 0:
             print '   {0:<20} - {1:<57}'.format(attack, feathermodules.module_list[attack]['description'])
    
 analyze = AnalyzeCommand('analyze', help='Analyze/decode samples', dynamic_args=True)
@@ -231,11 +244,11 @@ class AutopwnCommand(Command):
          print 'No loaded samples. Please use the \'import\' command.'
          return False
       print '[+] Analyzing samples...'
-      analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True)
-      if analysis_results['decoded_ciphertexts'] != feathermodules.samples:
-         feathermodules.samples = analysis_results['decoded_ciphertexts']
+      feathermodules.analysis_results = ca.analyze_ciphertext(feathermodules.samples, verbose=True)
+      if feathermodules.analysis_results['decoded_ciphertexts'] != feathermodules.samples:
+         feathermodules.samples = feathermodules.analysis_results['decoded_ciphertexts']
       for attack in feathermodules.module_list.keys():
-         if len(set(feathermodules.module_list[attack]['keywords']) & set(analysis_results['keywords'])) > 0:
+         if len(set(feathermodules.module_list[attack]['keywords']) & set(feathermodules.analysis_results['keywords'])) > 0:
             print 'Running module: %s' % attack
             feathermodules.current_options = feathermodules.module_list[attack]['options']
             if debug:
@@ -399,6 +412,7 @@ fd_console.addChild(options)
 fd_console.addChild(set_command)
 fd_console.addChild(unset)
 fd_console.addChild(results)
+fd_console.addChild(advice_command)
 
 
 #--------
