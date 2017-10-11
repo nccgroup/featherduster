@@ -8,7 +8,8 @@ FeatherDuster is a tool for brushing away magical crypto fairy dust.
 import sys
 import os
 import readline
-import completer
+import completer #readline completion
+import advice #advice text
 from ishell.console import Console
 from ishell.command import Command
 
@@ -146,6 +147,15 @@ import_sample.addChild(import_clear)
 
 
 
+# advice
+class AdviceCommand(Command):
+   def run(self, line):
+      advice.give_advice()
+
+advice = AdviceCommand('advice', help='Provides advice on next steps and research based on current state')
+
+
+
 # console
 class ConsoleCommand(Command):
    def run(self, line):
@@ -155,6 +165,8 @@ class ConsoleCommand(Command):
 
 
 console = ConsoleCommand('console', help='Opens an interactive prompt', dynamic_args=True)
+
+
 
 # export to file
 class ExportCommand(Command):
@@ -399,6 +411,7 @@ fd_console.addChild(options)
 fd_console.addChild(set_command)
 fd_console.addChild(unset)
 fd_console.addChild(results)
+fd_console.addChild(advice)
 
 
 #--------
