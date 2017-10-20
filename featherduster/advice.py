@@ -170,6 +170,7 @@ def give_advice():
       print advice
       return
 
+   give_sample_advice = False
    if len(feathermodules.samples) == 1:
       advice += advice_text['only_one_sample']
       give_sample_advice = True
