@@ -1037,6 +1037,7 @@ def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_tabl
    
    ciphertext - Ciphertext to attack
    max_keysize - Largest keysize to try
+   min_keysize - Smallest keysize to try
    num_answers - (int) maximum number of answers to return
    pt_freq_table - A frequency table for the expected plaintext, as generated
       by generate_frequency_table()
