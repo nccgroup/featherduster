@@ -1031,7 +1031,7 @@ def break_single_byte_xor(ciphertext,num_answers=20,pt_freq_table=frequency.freq
    # Return the best resulting plaintexts and associated score sorted by score
    return sorted(answers.items(), key=lambda x: x[1])
 
-def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_table=frequency.frequency_tables['english'], verbose=False):
+def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_table=frequency.frequency_tables['english'], verbose=False, min_keysize=2):
    '''
    Return a list of likely successful multi-byte XOR decryptions sorted by score
    
@@ -1045,7 +1045,7 @@ def break_multi_byte_xor(ciphertext, max_keysize=40, num_answers=5, pt_freq_tabl
    pt_freq_table_single_chars = dict(filter(lambda x: len(x[0])==1, pt_freq_table.items()))
    edit_distances = {}
    ciphertext_len = len(ciphertext)
-   for keysize in xrange(2,max_keysize+1):
+   for keysize in xrange(min_keysize,max_keysize+1):
       ciphertext_chunks = split_into_blocks(ciphertext, keysize)
       if len(ciphertext_chunks) < 3:
          break
