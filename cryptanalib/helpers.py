@@ -5,6 +5,7 @@ by Daniel "unicornFurnace" Crowley
 dependencies - PyCrypto, GMPy
 '''
 
+from Crypto.Util import number
 from Crypto.Hash import *
 from Crypto.PublicKey import RSA
 
@@ -19,6 +20,13 @@ import zlib
 # This section contains various functions that are not terribly
 # useful on their own, but allow other functionality to work
 #------------------------------------
+
+# Blinding and unblinding funcs taken graciously from PyCrypto PubKey/RSA/_slowmath.py
+def rsa_blind(message, randint, exponent, modulus):
+   return (message * pow(randint, exponent, modulus)) % modulus
+
+def rsa_unblind(message, randint, modulus):
+   return number.inverse(randint, modulus) * message % modulus
 
 def check_rsa_key(sample):
    """

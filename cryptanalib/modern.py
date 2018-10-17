@@ -6,6 +6,7 @@ dependencies - PyCrypto, GMPy
 '''
 
 from Crypto.Hash import *
+from Crypto.Util import number
 from Crypto.PublicKey import RSA
 
 from helpers import *
@@ -412,11 +413,10 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
                sys.stdout.write("\rCurrent search number: %d" % search_number)
                sys.stdout.flush()
             search_number += 1
-            test_ciphertext = c0 * search_number ** exponent
-            test_ciphertext %= modulus
-            if padding_oracle(test_ciphertext.binary()[::-1]):
+            test_ciphertext = c0 * pow(search_number, exponent, modulus) % modulus
+            if padding_oracle(number.long_to_bytes(test_ciphertext)):
                if verbose:
-                  print "Found s0! Starting to narrow search interval..."
+                  print "Found s1! Starting to narrow search interval..."
                return(search_number)
       else:
          # Step 2c 
@@ -428,9 +428,8 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
             s_range_top = gmpy.floor(( B3-1 + r * modulus ) / a)
             s = gmpy.mpz(s_range_bottom)
             while s <= s_range_top:
-               test_ciphertext = c0 * s ** exponent
-               test_ciphertext %= modulus
-               if padding_oracle(test_ciphertext.binary()[::-1]):
+               test_ciphertext = c0 * pow(s, exponent, modulus) % modulus
+               if padding_oracle(number.long_to_bytes(test_ciphertext)):
                   return(s)
                s += 1
             r += 1
@@ -450,24 +449,20 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
 
    # Step 1: Blinding
    # Pseudocode:
-   randint = 1 # "random" integer lol
+   s0 = 1
    ct_is_pkcs_conforming = padding_oracle(ciphertext)
-   if ct_is_pkcs_conforming:
-      c0 = gmpy.mpz(string_to_long(ciphertext))
-      M = set([(B2, B3 - 1)])
-      if verbose:
-         print "Original ciphertext is PKCS conforming, skipping blinding step and searching for s0..."
+   c0 = gmpy.mpz(string_to_long(ciphertext))
+   M = set([(B2, B3 - 1)])
    while ct_is_pkcs_conforming == False:
-      randint += 1
-      c0 = gmpy.mpz(string_to_long(ciphertext)) * randint ** exponent
-      c0 %= modulus
-      if padding_oracle(c0.binary()[::-1]):
+      s0 += 1
+      test_c0 = rsa_blind(c0, s0, exponent, modulus)
+      if padding_oracle(number.long_to_bytes(test_c0)):
          if verbose:
-            print "Blinding complete. Searching for s0..."
-         M = set([(B2, B3 - 1)])
+            print "Found s0 = %d, blinding complete. Searching for s1..." % s0
          ct_is_pkcs_conforming = True
+         c0 = test_c0
 
-   s = modulus/(B3)
+   s = modulus/B3
    i = 1
 
    while True:
@@ -482,14 +477,13 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
       if verbose and (len(M) == 1):
          sys.stdout.write("\rCurrent interval bit length: %d | Iterations finished: %d  " % (interval_bit_length, i))
          sys.stdout.flush()
-      if debug:
-         print 'Current possible message space: %r' % list_M
       if len(M) == 1 and interval_bit_length < 8:
          for message in range(list_M[0][0],list_M[0][1]+1):
+            if debug:
+               print 'Debug: encrypted message is %r' % number.long_to_bytes(pow(message, s0, modulus))
             if pow(message, exponent, modulus) == c0:
-               return long_to_string(message) # FIXME Doesn't work for non-PKCS-conforming ciphertext
+               return number.long_to_bytes(rsa_unblind(message,s0,modulus))
          # Something went wrong...
-         print 'Debug: approximate message is {}'.format(repr(list_M[0][0].binary()))
          return False
       i += 1
 
