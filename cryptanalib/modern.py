@@ -7,7 +7,6 @@ dependencies - PyCrypto, GMPy
 
 from Crypto.Hash import *
 from Crypto.Util import number
-from Crypto.PublicKey import RSA
 
 from helpers import *
 
@@ -26,57 +25,92 @@ import zlib
 # with modern crypto, or at least cryptosystems likely to be found in the real world.
 #-----------------------------------------
 
-def lcg_next_states(known_states_in_order, num_states=5, a='unknown', c='unknown', m='unknown'):
+def lcg_recover_parameters(states, a=None, c=None, m=None):
+   #TODO: allow modulus recovery
+   if m == None:
+      print 'modulus recovery not yet implemented.'
+      return False
+
+   if c == None:
+      if len(states) < 2:
+         print 'Too few states for addend recovery.'
+         return False
+      if a != None and m != None:
+         c = (states[1] - states[0] * a) % m
+      else:
+         if len(states) < 3:
+            print 'Too few states for addend and multiplier recovery.'
+            return False
+         if m != None:
+            a = (states[1] - states[2] * number.inverse(states[1] - states[0], m)) % m
+
+   if a == None:
+      if len(states) < 2:
+         print 'Too few states for multiplier recovery.'
+         return False
+      a = (((states[1] - c) % m) * number.inverse(states[0],m)) % m
+
+   return (a,c,m)
+
+
+def lcg_next_states(states, num_states=5, a=None, c=None, m=None):
    '''
-   Given the current state of an LCG, return the next states
+      Given the current state of an LCG, return the next states
    in sequence.
    
-   Currently, the A, C, and M values must be known.
+      Currently, the modulus must be known. Other parameters can be
+   recovered given enough states.
    
-   known_states_in_order - (list of ints) Known states from the
-      LCG.
+   states - (list of ints) Known, complete states in order from
+      the LCG.
    num_states - (int) The number of future states to generate.
    a - (int) The multiplier for the LCG.
    c - (int) The addend for the LCG.
    m - (int) The modulus for the LCG.
    '''
-   #TODO: allow a,c,m recovery for unknown values
-   if any([x=='unknown' for x in [a,c,m]]):
-      print 'a,c,m recovery not yet implemented.'
-      return False
-   
-   current_state = known_states_in_order[-1]
+
+   if not all([a,c,m]):
+      parameters = lcg_recover_parameters(states,a,c,m)
+      if parameters == False:
+         return False
+      else:
+         (a,c,m) = parameters
+
+   current_state = states[-1]
    next_states = []
-   for i in xrange(num_states):
+   for i in range(num_states):
       current_state = (a * current_state + c) % m
       next_states.append(current_state)
 
    return next_states
 
 
-def lcg_prev_states(known_states_in_order, num_states=5, a='unknown', c='unknown', m='unknown'):
+def lcg_prev_states(states, num_states=5, a=None, c=None, m=None):
    '''
-   Given the current state of an LCG, return the previous states
+      Given the current state of an LCG, return the previous states
    in sequence.
    
-   Currently, the A, C, and M values must be known.
+      Currently, the modulus must be known. Other parameters can be
+   recovered given enough sequential states.
    
-   known_states_in_order - (list of ints) Known states from the
-      LCG.
+   states - (list of ints) Known sequential states from the LCG.
    num_states - (int) The number of past states to generate.
    a - (int) The multiplier for the LCG.
    c - (int) The addend for the LCG.
    m - (int) The modulus for the LCG.
    '''
-   #TODO: allow a,c,m recovery for unknown values
-   if any([x=='unknown' for x in [a,c,m]]):
-      print 'a,c,m recovery not yet implemented.'
-      return False
 
-   current_state = known_states_in_order[0]
+   if not all([a,c,m]):
+      parameters = lcg_recover_parameters(states,a,c,m)
+      if parameters == False:
+         return False
+      else:
+         (a,c,m) = parameters
+
+   current_state = states[0]
    prev_states = []
-   for i in xrange(num_states):
-      current_state = (a * gmpy.invert(current_state - c, m)) % m
+   for i in range(num_states):
+      current_state = (a * number.inverse(current_state - c, m)) % m
       prev_states.insert(0,current_state)
 
    return prev_states
