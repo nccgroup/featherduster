@@ -1,4 +1,5 @@
 __all__ = ['test_break_alpha_shift',
+   'test_lcg_cracker',
    'test_break_columnar_transposition',
    'test_break_many_time_pad',
    'test_cbcr_do_to_eo',

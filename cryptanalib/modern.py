@@ -27,6 +27,7 @@ import zlib
 
 def lcg_recover_parameters(states, a=None, c=None, m=None):
    #TODO: allow modulus recovery
+
    if m == None:
       print 'modulus recovery not yet implemented.'
       return False
@@ -36,21 +37,32 @@ def lcg_recover_parameters(states, a=None, c=None, m=None):
          print 'Too few states for addend recovery.'
          return False
       if a != None and m != None:
-         c = (states[1] - states[0] * a) % m
-      else:
-         if len(states) < 3:
-            print 'Too few states for addend and multiplier recovery.'
-            return False
-         if m != None:
-            a = (states[1] - states[2] * number.inverse(states[1] - states[0], m)) % m
+         new_c = (states[1] - states[0] * a) % m
+         return (a,new_c,m)
+      '''FIXME
+      elif len(states) < 3:
+         print 'Too few states for addend and multiplier recovery.'
+         return False
+      new_a = (states[1] - states[2]) * number.inverse(states[1] - states[0], m) % m
+      new_c = (states[1] - states[0] * new_a) % m
+      return (new_a, new_c, m)
+      '''
+      return False
 
    if a == None:
+      ''' # FIXME
       if len(states) < 2:
          print 'Too few states for multiplier recovery.'
          return False
-      a = (((states[1] - c) % m) * number.inverse(states[0],m)) % m
-
-   return (a,c,m)
+      new_a = (states[1] - c) % m
+      print new_a
+      new_a *= number.inverse(states[0],m)
+      print new_a
+      new_a %= m
+      print new_a
+      return (new_a, c, m)
+      '''
+      return False
 
 
 def lcg_next_states(states, num_states=5, a=None, c=None, m=None):
@@ -110,7 +122,7 @@ def lcg_prev_states(states, num_states=5, a=None, c=None, m=None):
    current_state = states[0]
    prev_states = []
    for i in range(num_states):
-      current_state = (a * number.inverse(current_state - c, m)) % m
+      current_state = (((current_state - c) % m) * number.inverse(a, m)) % m
       prev_states.insert(0,current_state)
 
    return prev_states
