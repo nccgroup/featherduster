@@ -3,7 +3,6 @@ FROM ubuntu:xenial
 RUN apt-get update -qq && apt-get install -qq \
         build-essential \
         libncurses-dev \
-        libgmp3-dev \
         python-crypto \
         python-dev \
         python-pip \
