@@ -10,7 +10,6 @@ setup(name='featherduster',
       #packages=['cryptanalib','feathermodules','featherduster'],
       packages=find_packages(exclude=['examples','tests']),
       install_requires=[
-          'gmpy',
           'pycrypto',
           'ishell'
       ],
