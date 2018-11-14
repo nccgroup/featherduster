@@ -9,9 +9,9 @@ from Crypto.Util import number
 from Crypto.Hash import *
 from Crypto.PublicKey import RSA
 
+from decimal import *
 import string
 import frequency
-import gmpy
 import zlib
 
 #------------------------------------
@@ -20,6 +20,33 @@ import zlib
 # This section contains various functions that are not terribly
 # useful on their own, but allow other functionality to work
 #------------------------------------
+
+def nroot(x, n):
+   """
+   Return nth root of x.
+   """
+   if n <= 0:
+      raise ValueError("can't do negative or zero root")
+
+   getcontext().prec = max(30,len(str(x)))
+   approx_root = Decimal(x) ** (Decimal(1) / Decimal(n))
+   if pow(floor(approx_root),n) == x:
+      return floor(approx_root)
+   else:
+      return ceil(approx_root)
+
+def floor(number):
+   return number // 1
+
+def ceil(number):
+   floored = number // 1
+   if number == floored:
+      return number
+   else:
+      return floored + 1
+
+def bit_length(input):
+   return len(bin(input)) - 2
 
 # Blinding and unblinding funcs taken graciously from PyCrypto PubKey/RSA/_slowmath.py
 def rsa_blind(message, randint, exponent, modulus):
@@ -46,7 +73,7 @@ def check_rsa_key(sample):
       is_rsa_key = True
       if rsakey.has_private():
          has_private_component = True
-      n_bit_length = gmpy.mpz(rsakey.n).bit_length()
+      n_bit_length = bit_length(rsakey.n)
    # Don't really care why it fails, just want to see if it did
    except:
       is_rsa_key = False
@@ -541,35 +568,6 @@ def long_to_string(inlong):
    else:
       return hex_encoded.decode('hex')
 
-"""
-# Removed for now because gmpy provides its own invmod
-# gmpy.invert() seems to be OK for its current uses,
-# but we'll leave this here a while just in case.
-def inverse_mod( a, m ):
-  '''
-  Inverse of a mod m from ecdsa python module by Peter Pearson.
-
-  a - (int) Operand one
-  m - (int) Modulus
-  '''
-
-  if a < 0 or m <= a: a = a % m 
-
-  # From Ferguson and Schneier, roughly:
-
-  c, d = a, m
-  uc, vc, ud, vd = 1, 0, 0, 1
-  while c != 0:
-    q, c, d = divmod( d, c ) + ( c, )
-    uc, vc, ud, vd = ud - q*uc, vd - q*vc, uc, vc
-
-  # At this point, d is the GCD, and ud*a+vd*m = d.
-  # If d == 1, this means that ud is a inverse.
-
-  assert d == 1
-  if ud > 0: return ud
-  else: return ud + m 
-"""
 
 def split_into_blocks(ciphertext,blocksize):
    '''
@@ -721,5 +719,5 @@ def derive_d_from_pqe(p,q,e):
    q - The second of the two factors of the modulus
    e - The public exponent
    '''
-   return long(gmpy.invert(e,(p-1)*(q-1)))
+   return long(number.inverse(e,(p-1)*(q-1)))
 
