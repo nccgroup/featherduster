@@ -10,12 +10,13 @@ from Crypto.Util import number
 
 from helpers import *
 
+from decimal import *
+import math
 import string
 import frequency
 import operator
 import itertools
 import sys
-import gmpy
 import zlib
 
 #-----------------------------------------
@@ -36,33 +37,23 @@ def lcg_recover_parameters(states, a=None, c=None, m=None):
       if len(states) < 2:
          print 'Too few states for addend recovery.'
          return False
-      if a != None and m != None:
+      if a == None:
+         if len(states) < 4:
+            print 'Too few states for multiplier recovery.'
+            return False
+         new_a = ((states[2] - states[1]) % m) * number.inverse(states[1] - states[0], m) % m
+         new_c = (states[1] - states[0] * new_a) % m
+         return (new_a,new_c,m)
+      else:
          new_c = (states[1] - states[0] * a) % m
-         return (a,new_c,m)
-      '''FIXME
-      elif len(states) < 3:
-         print 'Too few states for addend and multiplier recovery.'
-         return False
-      new_a = (states[1] - states[2]) * number.inverse(states[1] - states[0], m) % m
-      new_c = (states[1] - states[0] * new_a) % m
-      return (new_a, new_c, m)
-      '''
-      return False
+         return (a, new_c, m)
 
    if a == None:
-      ''' # FIXME
-      if len(states) < 2:
+      if len(states) < 3:
          print 'Too few states for multiplier recovery.'
          return False
-      new_a = (states[1] - c) % m
-      print new_a
-      new_a *= number.inverse(states[0],m)
-      print new_a
-      new_a %= m
-      print new_a
+      new_a = ((states[2] - states[1]) * number.inverse(states[1] - states[0], m)) % m
       return (new_a, c, m)
-      '''
-      return False
 
 
 def lcg_next_states(states, num_states=5, a=None, c=None, m=None):
@@ -193,7 +184,7 @@ def recover_rsa_modulus_from_signatures(m1, s1, m2, s2, e=0x10001):
    s1 = string_to_long(s1)
    m2 = string_to_long(m2)
    s2 = string_to_long(s2)
-   gcd_result = gmpy.gcd( s1 ** e - m1, s2 ** e - m2 )
+   gcd_result = number.GCD( s1 ** e - m1, s2 ** e - m2 )
 
    if gcd_result < s1 or gcd_result < s2:
       # The modulus can never be smaller than our signature.
@@ -241,13 +232,12 @@ def small_message_rsa_attack(ciphertext, modulus, exponent, num_answers=10, minu
    
    count = multiplier = 1
 
-   ciphertext = gmpy.mpz(ciphertext)
 
    if verbose:
       print "Starting small message RSA attack..." 
 
    while True:
-      candidate_plaintext = (ciphertext + multiplier*modulus).root(exponent)[0]
+      candidate_plaintext = nroot((ciphertext + multiplier*modulus),exponent)
       candidate_plaintext = long_to_string(long(candidate_plaintext))
       score = detect_plaintext(candidate_plaintext, pt_freq_table=frequency_table,
          common_words=cribs)
@@ -316,20 +306,19 @@ def wiener(N, e, minutes=10, verbose=False):
       return ret
 
 
-   def sqrt(n):
-      return gmpy.sqrt(n)
-
    def polRoot(a, b, c):
       """
       Return an integer root of polynom ax^2 + bx + c.
       """
 
       delta = abs(b*b - 4*a*c)
-      return (-b - sqrt(delta))/(2*a)
+      return (-b - Decimal.sqrt(delta))/(2*a)
 
    if verbose:
        print "Computing continued fraction."
 
+   getcontext().prec = 4096
+   N = Decimal(N)
    frac = contfrac(e, N)
 
    if verbose:
@@ -378,26 +367,24 @@ def fermat_factor(N, minutes=10, verbose=False):
    current_time = int(time())
    end_time = current_time + int(minutes * 60)
 
-   def sqrt(n):
-      return gmpy.fsqrt(n)
-  
+   getcontext().prec = 4096
+   N = Decimal(N)
+
    def is_square(n):
-      sqrt_n = sqrt(n)
-      return sqrt_n.floor() == sqrt_n
+      sqrt_n = n.sqrt()
+      return floor(sqrt_n) == sqrt_n
 
    if verbose:
       print "Starting factorization..."
    
-   gmpy.set_minprec(4096)
-
-   N = gmpy.mpf(N)
    if N <= 0:        return [1,N]
    if N % 2 == 0:    return [2,N/2]
 
-   a = gmpy.mpf(gmpy.ceil(sqrt(N)))
+   sqrt_n = N.sqrt()
+   a = ceil(sqrt_n)
    count = 0
 
-   while not is_square(gmpy.mpz(a ** 2 - N)):
+   while not is_square(a ** 2 - N):
       a += 1
       count += 1
       if verbose:
@@ -408,7 +395,7 @@ def fermat_factor(N, minutes=10, verbose=False):
          if verbose: print "\nTime expired, returning [1,N]"
          return [1,N]
 
-   b = sqrt(gmpy.mpz(a ** 2 - N))
+   b = Decimal.sqrt(a ** 2 - N)
    print "\nModulus factored!"
    return [long(a - b), long(a + b)]
 
@@ -430,11 +417,12 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
    verbose - (bool) Whether to show verbose output
    debug - (bool) Show very verbose output
    """
+
+   getcontext().prec = len(str(modulus))
    # Preamble:
-   exponent = gmpy.mpz(exponent)
-   bit_length = gmpy.mpz(modulus).bit_length()
-   bit_length += (bit_length % 8)
-   k = bit_length / 8
+   modulus_bit_length = bit_length(long(modulus))
+   modulus_bit_length += (modulus_bit_length % 8)
+   k = modulus_bit_length / 8
    B = 2 ** ( 8 * (k-2) )
    # constants to avoid recomputation
    B2 = 2 * B
@@ -443,9 +431,9 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
    def get_r_values(s, M):
       R = []
       for a,b in M:
-         low_val = gmpy.ceil( (a * s - B3 + 1)/modulus )
-         high_val = gmpy.floor( ((b * s - B2)/modulus))
-         R.extend([x for x in range(int(low_val),int(high_val+1))])
+         low_val = ceil( (a * s - B3 + 1)/modulus )
+         high_val = floor( ((b * s - B2)/modulus))
+         R.extend([x for x in range(low_val,high_val+1)])
       if verbose and len(R) > 1:
          print "Found %d possible r values, trying to narrow to one..." % len(R)
       return R
@@ -459,45 +447,47 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
                sys.stdout.write("\rCurrent search number: %d" % search_number)
                sys.stdout.flush()
             search_number += 1
-            test_ciphertext = c0 * pow(search_number, exponent, modulus) % modulus
+            test_ciphertext = c0 * long(pow(Decimal(search_number), exponent, modulus))
+            test_ciphertext %= modulus
             if padding_oracle(number.long_to_bytes(test_ciphertext)):
                if verbose:
-                  print "Found s1! Starting to narrow search interval..."
+                  print "Found s0! Starting to narrow search interval..."
                return(search_number)
       else:
-         # Step 2c 
+         # Step 2c
          a = list(M)[0][0]
          b = list(M)[0][1]
-         r = gmpy.ceil( 2*(b * search_number - B2)/modulus )
+         r = ceil( 2*(b * search_number - B2)/modulus )
          while True:
-            s_range_bottom = gmpy.ceil(( B2 + r * modulus ) / b)
-            s_range_top = gmpy.floor(( B3-1 + r * modulus ) / a)
-            s = gmpy.mpz(s_range_bottom)
+            s_range_bottom = ceil(( B2 + r * modulus ) / b)
+            s_range_top = floor(( B3-1 + r * modulus ) / a)
+            s = s_range_bottom
             while s <= s_range_top:
-               test_ciphertext = c0 * pow(s, exponent, modulus) % modulus
+               test_ciphertext = c0 * long(pow(Decimal(s), exponent, modulus))
+               test_ciphertext %= modulus
                if padding_oracle(number.long_to_bytes(test_ciphertext)):
-                  return(s)
+                  return (s)
                s += 1
             r += 1
-  
 
    def step3(s, M, R):
       new_M = set([])
       for a,b in M:
          for r in R:
-            new_a = max(a, gmpy.ceil( (B2 + r * modulus)/s ) )
-            new_b = min(b, gmpy.floor( (B3 - 1 + r * modulus)/s ) )
+            new_a = max(a, ceil( (B2 + r * modulus)/s ) )
+            new_b = min(b, floor( (B3 - 1 + r * modulus)/s ) )
             if new_a <= new_b:
                new_M |= set([(new_a, new_b)])
-      return new_M
-   
-
+      if len(new_M) == 0:
+         return M
+      else:
+         return new_M
 
    # Step 1: Blinding
    # Pseudocode:
    s0 = 1
    ct_is_pkcs_conforming = padding_oracle(ciphertext)
-   c0 = gmpy.mpz(string_to_long(ciphertext))
+   c0 = number.bytes_to_long(ciphertext)
    M = set([(B2, B3 - 1)])
    while ct_is_pkcs_conforming == False:
       s0 += 1
@@ -519,15 +509,15 @@ def bb98_padding_oracle(ciphertext, padding_oracle, exponent, modulus, verbose=F
       M = step3(s, M, R)
       # Step 4: Computing the solution
       list_M = list(M)
-      interval_bit_length = (gmpy.mpz(list_M[0][1]) - gmpy.mpz(list_M[0][0])).bit_length()
+      interval_bit_length = bit_length(list_M[0][1] - list_M[0][0])
       if verbose and (len(M) == 1):
          sys.stdout.write("\rCurrent interval bit length: %d | Iterations finished: %d  " % (interval_bit_length, i))
          sys.stdout.flush()
       if len(M) == 1 and interval_bit_length < 8:
          for message in range(list_M[0][0],list_M[0][1]+1):
             if debug:
-               print 'Debug: encrypted message is %r' % number.long_to_bytes(pow(message, s0, modulus))
-            if pow(message, exponent, modulus) == c0:
+               print 'Debug: encrypted message is %r' % number.long_to_bytes(long(pow(Decimal(message), s0, modulus)))
+            if long(pow(Decimal(message), exponent, modulus)) == c0:
                return number.long_to_bytes(rsa_unblind(message,s0,modulus))
          # Something went wrong...
          return False
@@ -1287,8 +1277,8 @@ def hastad_broadcast_attack(key_message_pairs, exponent):
    https://www.christoph-egger.org/weblog/entry/46)
    """
    x,n = chinese_remainder_theorem(key_message_pairs)
-   realnum = gmpy.mpz(x).root(exponent)[0].digits()
-   
+   realnum = long(nroot(x,exponent))
+
    return realnum
 
 
@@ -1315,10 +1305,10 @@ def dsa_repeated_nonce_attack(r,msg1,s1,msg2,s2,n,verbose=False):
    z1 = string_to_long(SHA.new(msg1).digest())
    z2 = string_to_long(SHA.new(msg2).digest())
    
-   sdiff_inv = gmpy.invert(((s1-s2)%n),n)
+   sdiff_inv = number.inverse(((s1-s2)%n),n)
    k = ( ((z1-z2)%n) * sdiff_inv) % n
    
-   r_inv = gmpy.invert(r,n)
+   r_inv = number.inverse(r,n)
    da = (((((s1*k) %n) -z1) %n) * r_inv) % n
    
    if verbose:
