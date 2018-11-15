@@ -64,6 +64,7 @@ The analysis engine in Cryptanalib, used by FeatherDuster, can automatically det
 * Vanilla Base64
 * ASCII hex-encoding
 * Zlib compression
+* URL encoding
 
 Cryptanalib's analysis engine can detect a number of properties in the analysis phase, too:
 
