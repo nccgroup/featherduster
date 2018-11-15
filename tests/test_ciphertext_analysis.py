@@ -2,6 +2,7 @@ from Crypto import Random
 from Crypto.Cipher import AES
 import cryptanalib as ca
 from zlib import compress, decompress
+from urllib import quote
 
 print 'Testing ciphertext analysis engine...'
 
@@ -84,6 +85,11 @@ print 'Analyzing base64-encoded ciphertext...'
 base64_results = ca.analyze_ciphertext([ct.encode('base64') for ct in ecb_ciphertexts])
 if base64_results['decoded_ciphertexts'][0] != ecb_ciphertexts[0]:
    exit('Base64 encoding detection is broken.')
+
+print 'Analyzing url-encoded ciphertext...'
+url_results = ca.analyze_ciphertext([quote(ct) for ct in ecb_ciphertexts])
+if url_results['decoded_ciphertexts'][0] != ecb_ciphertexts[0]:
+   exit('URL encoding detection is broken.')
 
 print 'Analyzing compressed plaintexts...'
 compressed_results = ca.analyze_ciphertext(compressed_messages)
