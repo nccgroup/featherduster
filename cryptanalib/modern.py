@@ -2,7 +2,7 @@
 Cryptanalib - A series of useful functions for cryptanalysis
 by Daniel "unicornFurnace" Crowley
 
-dependencies - PyCrypto, GMPy
+dependencies - PyCrypto
 '''
 
 from Crypto.Hash import *
@@ -11,13 +11,13 @@ from Crypto.Util import number
 from helpers import *
 
 from decimal import *
-import math
 import string
 import frequency
 import operator
 import itertools
 import sys
 import zlib
+import urllib
 
 #-----------------------------------------
 # Real-world attack functions
@@ -563,17 +563,20 @@ def analyze_ciphertext(data, verbose=False):
    '''
    Takes in a list of samples and analyzes them to determine what type
    of samples they may be.
-   
+
+   Handles various data formats:
+   zlib
+   Base64
+   ASCII hex
+   URL
+   OpenSSL salted data formatting
+
    Checks for:
    Randomness of the data (to identify output of a CSPRNG/RNG/strong cipher)
-   zlib compression
-   ASCII hex encoding
-   Base64 encoding
    Block cipher vs Stream cipher
    ECB mode
    CBC with fixed IV
    Hashes based on a Merkle-Damgard construction
-   OpenSSL formatted encrypted data
    Stream cipher key reuse
    
    data - A list of samples to analyze
@@ -596,6 +599,7 @@ def analyze_ciphertext(data, verbose=False):
       data_properties[index]['is_openssl_formatted'] = (datum[:8] == "Salted__")
       data_properties[index]['base64_encoded'] = is_base64_encoded(datum)
       data_properties[index]['hex_encoded'] = is_hex_encoded(datum)
+      data_properties[index]['url_encoded'] = is_url_encoded(datum)
       data_properties[index]['zlib_compressed'] = is_zlib_compressed(datum)
       data_properties[index]['blocksize'] = detect_block_cipher(datum)
 
@@ -611,19 +615,23 @@ def analyze_ciphertext(data, verbose=False):
    if all([data_properties[datum]['is_openssl_formatted'] for datum in data_properties]):
       if verbose:
          print '[+] Messages appear to be in OpenSSL format. Stripping OpenSSL header and analyzing again.'
-      return analyze_ciphertext(map(lambda x: x[16:],data), verbose=verbose)
+      return analyze_ciphertext(map(lambda x: x[16:], data), verbose=verbose)
    if all([data_properties[datum]['hex_encoded'] for datum in data_properties]):
       if verbose:
          print '[+] Messages appear to be ASCII hex encoded, hex decoding and analyzing again.'
-      return analyze_ciphertext(map(lambda x: x.decode('hex'),data), verbose=verbose)
+      return analyze_ciphertext(map(lambda x: x.decode('hex'), data), verbose=verbose)
    if all([data_properties[datum]['zlib_compressed'] for datum in data_properties]):
       if verbose:
          print '[+] Messages appear to be zlib compressed, decompressing and analyzing again.'
-      return analyze_ciphertext(map(lambda x: zlib.decompress(x),data), verbose=verbose)
+      return analyze_ciphertext(map(zlib.decompress, data), verbose=verbose)
+   if all([data_properties[datum]['url_encoded'] for datum in data_properties]):
+      if verbose:
+         print '[+] Messages appear to be URL encoded, URL decoding and analyzing again.'
+      return analyze_ciphertext(map(urllib.unquote, data), verbose=verbose)
    if all([data_properties[datum]['base64_encoded'] and not data_properties[datum]['is_all_alpha'] for datum in data_properties]):
       if verbose:
          print '[+] Messages appear to be Base64 encoded, Base64 decoding and analyzing again.'
-      return analyze_ciphertext(map(lambda x: x.decode('base64'),data), verbose=verbose)
+      return analyze_ciphertext(map(lambda x: x.decode('base64'), data), verbose=verbose)
    min_blocksize = min([data_properties[datum]['blocksize'] for datum in data_properties])
    
    # perhaps we're dealing with hashes?

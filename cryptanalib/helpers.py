@@ -2,7 +2,7 @@
 Cryptanalib - A series of useful functions for cryptanalysis
 by Daniel "unicornFurnace" Crowley
 
-dependencies - PyCrypto, GMPy
+dependencies - PyCrypto
 '''
 
 from Crypto.Util import number
@@ -13,6 +13,7 @@ from decimal import *
 import string
 import frequency
 import zlib
+import urllib
 
 #------------------------------------
 # Helper functions
@@ -23,7 +24,7 @@ import zlib
 
 def nroot(x, n):
    """
-   Return nth root of x.
+   Return integer nth root of x.
    """
    if n <= 0:
       raise ValueError("can't do negative or zero root")
@@ -36,9 +37,15 @@ def nroot(x, n):
       return ceil(approx_root)
 
 def floor(number):
+   """
+   Return the closest integer <= number.
+   """
    return number // 1
 
 def ceil(number):
+   """
+   Return the closest integer >= number.
+   """
    floored = number // 1
    if number == floored:
       return number
@@ -46,13 +53,26 @@ def ceil(number):
       return floored + 1
 
 def bit_length(input):
+   """
+   Return the bit length of input.
+   EX: 7 (0b111) has length 3
+   EX: 8 (0b1000) has length 4
+   """
    return len(bin(input)) - 2
 
 # Blinding and unblinding funcs taken graciously from PyCrypto PubKey/RSA/_slowmath.py
 def rsa_blind(message, randint, exponent, modulus):
+   """
+   Return message RSA-blinded with integer randint for a keypair
+   with the provided public exponent and modulus.
+   """
    return (message * pow(randint, exponent, modulus)) % modulus
 
 def rsa_unblind(message, randint, modulus):
+   """
+   Return message RSA-unblinded with integer randint for a keypair
+   with the provided modulus.
+   """
    return number.inverse(randint, modulus) * message % modulus
 
 def check_rsa_key(sample):
@@ -136,6 +156,17 @@ def is_hex_encoded(sample):
       return True
    except:
       return False
+
+
+def is_url_encoded(sample):
+   """
+   Returns True or False to indicate whether a sample is URL-encoded
+
+   EX: Returns True for "abc%20def"
+   EX: Returns False for "foobar"
+   """
+   return sample != urllib.unquote(sample)
+
 
 def is_zlib_compressed(sample):
    '''

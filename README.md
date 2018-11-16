@@ -2,7 +2,7 @@
 ![FeatherDuster logo ](fd_logo.png)
 [![Build Status](https://travis-ci.org/nccgroup/featherduster.svg?branch=master)](https://travis-ci.org/nccgroup/featherduster)
 
-FeatherDuster is a tool written by Daniel "unicornfurnace" Crowley of NCC Group for breaking crypto which tries to make the process of identifying and exploiting weak cryptosystems as easy as possible. Cryptanalib is the moving parts behind FeatherDuster, and can be used independently of FeatherDuster.
+FeatherDuster is a tool written primarily by Daniel "unicornfurnace" Crowley, along with community contributions, for breaking crypto; It tries to make the process of identifying and exploiting weak cryptosystems as easy as possible. Cryptanalib is the moving parts behind FeatherDuster, and can be used independently of FeatherDuster.
 
 Why "FeatherDuster"? There's an in-joke amongst some crypto folk where using crypto poorly, or to solve a problem that crypto isn't meant to solve is called "sprinkling magical crypto fairy dust on it". FeatherDuster is for cleaning up magical crypto fairy dust.
 
@@ -64,6 +64,7 @@ The analysis engine in Cryptanalib, used by FeatherDuster, can automatically det
 * Vanilla Base64
 * ASCII hex-encoding
 * Zlib compression
+* URL encoding
 
 Cryptanalib's analysis engine can detect a number of properties in the analysis phase, too:
 
