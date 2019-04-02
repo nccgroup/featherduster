@@ -27,33 +27,92 @@ import urllib
 #-----------------------------------------
 
 def lcg_recover_parameters(states, a=None, c=None, m=None):
-   #TODO: allow modulus recovery
+    '''
+    Given the observed output of a Linear Congruential Generator
+    calculates the modulus, the mutiplier, and the addend.
 
-   if m == None:
-      print 'modulus recovery not yet implemented.'
-      return False
+    Modulus recovery relies on the property that, given a set of
+    numbers
+                {k_1 * m, k_2 * m, ..., k_n * m}
 
-   if c == None:
-      if len(states) < 2:
-         print 'Too few states for addend recovery.'
-         return False
-      if a == None:
-         if len(states) < 4:
-            print 'Too few states for multiplier recovery.'
+    the, with high probability, it is:
+
+            GCD(k_1 * m, k_2 * m, ..., k_n * m) = m
+
+    To generate such a set with at least 2 numbers, at least 5
+    states are required.
+
+    Once the modulus is known, the multiplier and the addend
+    can be easily recovered. The first requires exactly 3
+    states, the second exactly 2.
+
+    states - (list) Observed states of the LCG.
+    a - (long) Multiplier.
+    c - (long) Addend.
+    m - (long) Modulus.
+
+    Returns the tuple ``(a, c, m)`` of recovered LCG parameters.
+    '''
+    # Start modulus recovery
+    if m is None:
+        if len(states) < 5:
+            print '[*] Modulus recovery requires at least 5 states.'
             return False
-         new_a = ((states[2] - states[1]) % m) * number.inverse(states[1] - states[0], m) % m
-         new_c = (states[1] - states[0] * new_a) % m
-         return (new_a,new_c,m)
-      else:
-         new_c = (states[1] - states[0] * a) % m
-         return (a, new_c, m)
 
-   if a == None:
-      if len(states) < 3:
-         print 'Too few states for multiplier recovery.'
-         return False
-      new_a = ((states[2] - states[1]) * number.inverse(states[1] - states[0], m)) % m
-      return (new_a, c, m)
+        diffs = [
+            q - p
+            for p, q in zip(states, states[1:])
+        ]
+
+        zeroes = [
+            d2 * d0 - d1 ** 2
+            for d0, d1, d2 in zip(diffs, diffs[1:], diffs[2:])
+        ]
+
+        m = reduce(number.GCD, zeroes)
+
+        if m < 2:
+            print '[-] Modulus could not be recovered, retry with different states.'
+            return False
+        else:
+            print '[+] Modulus recovered: ', m
+
+    # Start multiplier recovery
+    if a is None:
+        if len(states) < 3:
+            print '[*] Multiplier recovery requires at least 3 states.'
+            return False
+
+        inv = number.inverse(states[1] - states[0], m)
+        # ``number.inverse`` silently fails and returns 1
+        # so it's better to double check the result.
+        if inv * (states[1] - states[0]) % m != 1:
+            print '[-] Recovered modulus was incorrect.'
+            return False
+
+        a = (states[2] - states[1]) * inv % m
+
+        print '[+] Multiplier recovered: ', a
+
+    # Start addend recovery
+    if c is None:
+        if len(states) < 2:
+            print '[*] Addend recovery requires at least 2 states.'
+            return False
+
+        c = (states[1] - a * states[0]) % m
+
+    # Run a final check, to ensure the recovered parameters
+    # are correct. This is done by starting from ``states[0]``
+    # and testing if all other states can be generated.
+    try:
+        for current_state, next_state in zip(states, states[1:]):
+            assert next_state == (current_state * a + c) % m
+    except AssertionError:
+        print '[-] Could not recover LCG parameters.'
+        return False
+
+    return a, c, m
 
 
 def lcg_next_states(states, num_states=5, a=None, c=None, m=None):
