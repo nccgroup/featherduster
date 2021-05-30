@@ -72,7 +72,7 @@ def test_run(plaintext_len, key_len, key = ""):
             score /= float(len(key))
             #print "  Length is correct, key is recovered %d/%d" % (key_score, len(key))
         elif len(key_guess) % len(key) == 0:
-            #print "  Multiple of the key lenght: %d instead of %d" % (len(key_guess), len(key))
+            #print "  Multiple of the key length: %d instead of %d" % (len(key_guess), len(key))
             pass
         else:
             score = 0.0

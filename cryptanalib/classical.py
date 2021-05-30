@@ -249,7 +249,7 @@ def evaluate_vigenere_key_length(ciphertext, max_length):
             repeat = True
             break
 
-   # Change priority order if neccessary
+   # Change priority order if necessary
    if not key_length == key_length_best_guesses[0]:
       key_length_best_guesses.remove(key_length)
       key_length_best_guesses.insert(0, key_length)
@@ -307,7 +307,7 @@ def count_up(ll_indices, list_of_lists):
          # As soon as no carry overflow happens: stop increasing
          return ll_indices
       else:
-         # Carry overfow to the next digit
+         # Carry overflow to the next digit
          ll_indices[digit] = 0
          digit += 1
          continue

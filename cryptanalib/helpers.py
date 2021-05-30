@@ -492,7 +492,7 @@ def detect_plaintext(candidate_text, pt_freq_table=frequency.frequency_tables['e
 def generate_optimized_charset_from_frequency(freq_table, include_zero_freq=False):
    '''
    Given a character frequency table such as those returned by generate_frequency_table(),
-   return a string with only single characters sorted by frequency of occurance descending
+   return a string with only single characters sorted by frequency of occurrence descending
    '''
    # Filter out frequency items to only single characters
    single_char_freq_table = dict(filter(lambda x: len(x[0])==1, freq_table.items()))
