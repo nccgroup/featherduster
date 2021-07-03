@@ -29,7 +29,7 @@ import urllib
 def lcg_recover_parameters(states, a=None, c=None, m=None):
     '''
     Given the observed output of a Linear Congruential Generator
-    calculates the modulus, the mutiplier, and the addend.
+    calculates the modulus, the multiplier, and the addend.
 
     Modulus recovery relies on the property that, given a set of
     numbers
@@ -324,8 +324,8 @@ def wiener(N, e, minutes=10, verbose=False):
 
    Developed by Maxime Puys.
 
-   N - interger, modulus of the RSA key to factor using Wiener's attack.
-   e - interger, public exponent of the RSA key.
+   N - integer, modulus of the RSA key to factor using Wiener's attack.
+   e - integer, public exponent of the RSA key.
    minutes - number of minutes to run the algorithm before giving up
    verbose - (bool) Periodically show how many iterations have been
    """
