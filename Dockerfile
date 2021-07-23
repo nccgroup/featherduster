@@ -7,10 +7,13 @@ RUN apt-get update -qq && apt-get install -qq \
         python-dev \
         python-pip \
         python-setuptools \
+	curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /opt/featherduster
 WORKDIR /opt/featherduster
+RUN curl -O https://bootstrap.pypa.io/pip/2.7/get-pip.py
+RUN python get-pip.py
 RUN pip install -U pip
 RUN pip install .
 
