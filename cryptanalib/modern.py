@@ -1262,16 +1262,52 @@ def break_many_time_pad(ciphertexts, pt_freq_table=frequency.frequency_tables['s
    return final_result
 
 
-
-# TODO: write a batch GCD function
 def batch_gcd(items):
-   '''
-   Find the greatest common denominator between two numbers in a set of numbers
+   """
+   Takes a list of numbers and for each number Ni, finds gcd
+   between Ni and product of remaining numbers in the list.
+
+   Useful to factorize RSA public keys that share primes
+
+   Code based on Batch GCD algorithm described in
+   "N. Heninger,Z. Durumeric, E. Wustrow, J. A. Halderman,
+   Mining your Ps and Qs: Detection of widespread weak keys
+   in network devices"
    
-   Useful for attempting to factorize RSA public keys that share primes
-   '''
-   print 'todo'
-   
+   Algorithm:
+   Input: List of integers N0, N1, ..., Nm
+      1. Compute P = product of the sequence using product tree
+      2. Compute zi = (P mod Ni**2) for all Ni using remainder tree
+      3. Return gcd(Ni, zi/Ni) for all i
+
+   Returns list of numbers where each number corresponds to gcd
+   between number at that position in input list and product of
+   remaining numbers in the input list.
+
+   items - list of integers to find all-pairs GCD.
+   """
+
+   def product(sequence):
+      result = 1
+      for i in sequence:
+         result *= i
+      return result
+
+   # calculate product of the sequence using product tree
+   # stores internal nodes to use while computing remainders.
+   S = items
+   product_tree = [S]
+   while len(S) != 1:
+      S = [product(S[i:i+2]) for i in range(0, len(S), 2)]
+      product_tree.append(S)
+   P = product_tree[-1][0]
+
+   # calculate remainder of product of the sequence modulo each Ni**2.
+   remainders = [P]
+   for level in reversed(product_tree):
+      remainders = [remainders[i//2] % level[i]**2 for i in range(len(level))]
+
+   return [gcd(Ni, zi//Ni) for Ni, zi in zip(items, remainders)]
 
 
 def detect_hash_format(words, hashes):
