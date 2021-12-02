@@ -18,4 +18,5 @@ __all__ = ['test_break_alpha_shift',
    'test_wiener_factor',
    'test_rsa_crt_fault_attack',
    'test_break_vigenere',
-   'test_bleichenbacher']
+   'test_bleichenbacher',
+   'test_batch_gcd']
